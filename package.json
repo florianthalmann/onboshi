@@ -1,0 +1,30 @@
+{
+  "name": "onboshi",
+  "version": "0.0.1",
+  "description": "",
+  "main": "sounds.ts",
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "music-metadata": "^6.3.6",
+    "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.149",
+    "@types/node": "^13.9.2",
+    "@types/node-fetch": "^2.5.5"
+  },
+  "scripts": {
+    "install": "if cd node_modules/paulstretch_python; then git pull; else git clone https://github.com/paulnasca/paulstretch_python.git node_modules/paulstretch_python; fi",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/florianthalmann/onboshi.git"
+  },
+  "author": "florianthalmann",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/florianthalmann/onboshi/issues"
+  },
+  "homepage": "https://github.com/florianthalmann/onboshi#readme"
+}
