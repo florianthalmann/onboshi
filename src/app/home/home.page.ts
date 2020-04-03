@@ -8,8 +8,13 @@ import { OnboshiPlayer } from '../services/player.service';
 })
 export class HomePage {
 
-  constructor(private player: OnboshiPlayer) {
-    this.player.play();
+  protected x: number;
+  protected y: number;
+  
+  constructor(private player: OnboshiPlayer) {}
+  
+  protected updatePosition() {
+    this.player.setPosition(this.x/1000, this.y/1000);
   }
 
 }

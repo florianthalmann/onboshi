@@ -1,10 +1,14 @@
 import * as _ from 'lodash';
 
 type Range = [number, number];
-interface Config {
+
+export interface Config {
   sample: string,
   gain: number
 }
+
+const MIN_WIDTH = 0.3;
+const MAX_WIDTH = 0.6;
 
 export class Topology {
   
@@ -13,6 +17,7 @@ export class Topology {
   constructor(private samples: string[], private size = 1.0) {
     this.samples.forEach(s => this.gainRanges.set(s,
       [this.getRandomRange(), this.getRandomRange()]));
+    console.log([...this.gainRanges.keys()].map(k => k+" "+this.gainRanges.get(k).join(' ')))
   }
   
   getConfigs(x: number, y: number): Config[] {
@@ -32,7 +37,9 @@ export class Topology {
   }
   
   private getRandomRange(): Range {
-    return <Range>_.sortBy([_.random(this.size), _.random(this.size)]);
+    const width = _.random(MIN_WIDTH, MAX_WIDTH);
+    const position = _.random(0, width);
+    return [position, position+width];
   }
 
 }

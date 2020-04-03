@@ -12,6 +12,7 @@ const PATH = 'src/assets/sounds/test/'
 type FilterMap = Map<string, number[] | string[]>;
 
 //createSoundMaterial();
+addFilenamesJson('src/assets/sounds/full/');
 
 //TODO: make sure both categories are more or less equal
 async function createSoundMaterial(size = 1) {

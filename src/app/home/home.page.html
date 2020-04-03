@@ -12,4 +12,6 @@
       <ion-title size="large">Onboshi</ion-title>
     </ion-toolbar>
   </ion-header>
+  <ion-range min="0" max="1000" step="1" [(ngModel)]="x" (ionChange)="updatePosition()"></ion-range>
+  <ion-range min="0" max="1000" step="1" [(ngModel)]="y" (ionChange)="updatePosition()"></ion-range>
 </ion-content>
