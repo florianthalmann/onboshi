@@ -39,7 +39,8 @@ async function createSoundMaterial(size = 1) {
 }
 
 function addFilenamesJson(dir: string) {
-  fs.writeFileSync(dir+'_contents.json', JSON.stringify(fs.readdirSync(dir)));
+  fs.writeFileSync(dir+'_contents.json', JSON.stringify(
+    fs.readdirSync(dir).filter(f => _.includes(f, '.mp3'))));
 }
 
 async function saveStretchedFreeSound(searchTerm: string, filters: FilterMap,

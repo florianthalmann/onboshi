@@ -12,6 +12,7 @@ export class OnboshiPlayer {
   
   private topology: Topology;
   private players = new Map<string, Player>();
+  private fadeoutTimeouts = new Map<string, NodeJS.Timer>();
   
   constructor(private httpClient: HttpClient) {
     this.init();
@@ -31,39 +32,46 @@ export class OnboshiPlayer {
   private async updatePlayers(configs: Config[]) {
     const current = [...this.players.keys()];
     const future = configs.map(c => c.sample);
-    const toAdd = _.difference(future, current);
+    //remove disappearing
     const toRemove = _.difference(current, future);
-    console.log(current, toAdd, toRemove)
+    toRemove.map(s => this.removePlayer(s));
+    //add and adjust future
+    const toAdd = _.difference(future, current);
     await Promise.all(toAdd.map(s => this.addPlayer(s)));
-    //change gains and wait
     configs.forEach(c => this.adjustGain(c.sample, c.gain));
-    toRemove.forEach(s => this.adjustGain(s, 0));
-    await new Promise(resolve => setTimeout(resolve, RAMP_TIME*1000));
-    //remove
-    await Promise.all(toRemove.map(s => this.removePlayer(s)));
+    console.log("num sources", future.length);
   }
   
   private async addPlayer(sample: string) {
-    const player = await new Promise<Player>(resolve => {
-      const p = new Player(PATH+sample, () => resolve(p)).toDestination()});
-    player.volume.value = gainToDb(0);
-    player.loop = true;
-    player.loopStart = 0.4;
-    player.loopEnd = player.buffer.duration-0.4;
-    player.start();
-    this.players.set(sample, player);
+    this.players.set(sample, new Player(PATH+sample, () => {
+      const player = this.players.get(sample);
+      player.volume.value = gainToDb(0);
+      player.loop = true;
+      player.loopStart = 0.4;
+      player.loopEnd = player.buffer.duration-0.4;
+      player.start();
+    }).toDestination());
+  }
+  
+  private async removePlayer(sample: string) {
+    if (this.players.has(sample) && !this.fadeoutTimeouts.has(sample)) {
+      this.adjustGain(sample, 0);
+      this.fadeoutTimeouts.set(sample, setTimeout(() => {
+        this.fadeoutTimeouts.delete(sample);
+        const player = this.players.get(sample);
+        this.players.delete(sample);
+        player.stop().dispose();
+      }, RAMP_TIME*1000));
+    }
   }
   
   private adjustGain(sample: string, gain: number) {
     if (this.players.has(sample)) {
+      if (this.fadeoutTimeouts.has(sample)) {
+        clearTimeout(this.fadeoutTimeouts.get(sample));
+        this.fadeoutTimeouts.delete(sample);
+      }
       this.players.get(sample).volume.linearRampTo(gainToDb(gain), RAMP_TIME);
-    }
-  }
-  
-  private removePlayer(sample: string) {
-    if (this.players.has(sample)) {
-      this.players.get(sample).stop().dispose();
-      this.players.delete(sample);
     }
   }
   
