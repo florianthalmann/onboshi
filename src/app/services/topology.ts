@@ -1,14 +1,17 @@
 import * as _ from 'lodash';
 
-type Range = [number, number];
+interface Range {
+  center: number,
+  radius: number 
+}
 
 export interface Config {
   sample: string,
   gain: number
 }
 
-const MIN_WIDTH = 0.3;
-const MAX_WIDTH = 0.6;
+const MIN_WIDTH = 0.2;
+const MAX_WIDTH = 0.5;
 
 export class Topology {
   
@@ -32,14 +35,15 @@ export class Topology {
   }
   
   private getInterpolation(coord: number, range: Range) {
-    return Math.max(0,
-      Math.min((coord-range[0]),(range[1]-coord)) / (range[1]-range[0]/2));
+    const absdist = Math.abs(range.center-coord);
+    const distance = Math.min(absdist, this.size-absdist);
+    return Math.max(0, (range.radius-distance)/range.radius);
   }
   
   private getRandomRange(): Range {
-    const width = _.random(MIN_WIDTH, MAX_WIDTH);
-    const position = _.random(0, width);
-    return [position, position+width];
+    const position = _.random(this.size, true);
+    const radius = _.random(MIN_WIDTH/2, MAX_WIDTH/2);
+    return {center: position, radius: radius};
   }
 
 }
