@@ -10,8 +10,8 @@ export interface Config {
   gain: number
 }
 
-const MIN_WIDTH = 0.2;
-const MAX_WIDTH = 0.5;
+const DENSITY = 5;
+const WIDTH_VARIATION = 0.1;
 
 export class Topology {
   
@@ -42,7 +42,11 @@ export class Topology {
   
   private getRandomRange(): Range {
     const position = _.random(this.size, true);
-    const radius = _.random(MIN_WIDTH/2, MAX_WIDTH/2);
+    const baseRadius = this.size/Math.sqrt(this.samples.length)/2;//nonoverlapping
+    const refRadius = Math.sqrt(DENSITY)*baseRadius;//density == avg num overlapping
+    const variation = WIDTH_VARIATION*refRadius;
+    const radius = _.random(refRadius-variation/2, refRadius+variation/2);
+    console.log(position, baseRadius, refRadius, variation, radius);
     return {center: position, radius: radius};
   }
 
