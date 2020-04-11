@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Topology, Config } from './topology';
 
-const PATH = 'assets/sounds/full/';
+const PATH = 'assets/sounds/perc4/';
 const RAMP_TIME = 3;
 
 @Injectable()

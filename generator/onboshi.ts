@@ -4,37 +4,41 @@ import * as fs from 'fs';
 import * as mm from 'music-metadata';
 import { mapSeries, toMap, fetchJson, execute } from './util';
 
-const URI = "https://freesound.org/apiv2/search/text/?"
-const SOUNDS_URI = "https://freesound.org/apiv2/sounds/"
-const KEY = "DMkQspbGpJ45afW7LgzWan8tcbOzScC262QsYgjG"
-const PATH = 'src/assets/sounds/test/'
+const URI = "https://freesound.org/apiv2/search/text/?";
+const SOUNDS_URI = "https://freesound.org/apiv2/sounds/";
+const KEY = "DMkQspbGpJ45afW7LgzWan8tcbOzScC262QsYgjG";
+const PATH = 'src/assets/sounds/full2/';
+fs.existsSync(PATH) || fs.mkdirSync(PATH);
 
 type FilterMap = Map<string, number[] | string[]>;
 
-//createSoundMaterial();
-addFilenamesJson('src/assets/sounds/full/');
+createSoundMaterial();
 
 //TODO: make sure both categories are more or less equal
 async function createSoundMaterial(size = 1) {
   //textures
-  /*const textures = ['music', 'atmosphere', 'ambient']//, 'electronic', 'soundscape'];
+  const textures = ['atmosphere', 'ambient', 'soundscape', 'abstract']//, 'electronic', 'soundscape'];
   const keys = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"];
   const minor = keys.map(k => toMap(['ac_tonality', ['"'+k+' minor"']]));
   const major = keys.map(k => toMap(['ac_tonality', ['"'+k+' major"']]));
   const pitches: FilterMap[] = _.sampleSize(_.range(0, 127), 24).map(p =>
     toMap(['ac_note_midi', [p]]));
   const kinds: FilterMap[] = _.flatten([minor, major, pitches]);
-  await mapSeries(textures, t => mapSeries(kinds, k =>
+  /*await mapSeries(textures, t => mapSeries(kinds, k =>
     saveStretchedFreeSound(t, k, _.random(2,10,true), _.random(1,5,true))));*/
+  await mapSeries(kinds, k => saveStretchedFreeSound(
+    _.sample(textures), k, _.random(2,10,true), _.random(1,5,true)));
   //rhythmic elements
-  const rhythm = ['percussion', 'drums', 'rhythm'];
+  const rhythm = ['percussion', 'drums', 'rhythm', 'ethnic', 'beat', 'gong',
+    'bell', 'chime', 'drum', 'perc', 'shake', 'shaker', 'cymbal', 'roll',
+    'bottle', 'cup', 'africa', 'indonesia', 'sound'];
   const single = toMap(['ac_single_event', ['true']]);
   const multi = toMap(['ac_single_event', ['false']]);
   await mapSeries(rhythm, r => saveStretchedFreeSound(r, single,
-    _.random(2,10,true), _.random(1,5,true)));
+    1, _.random(1,10,true)));
   //less stretched, longer loops....
   await mapSeries(rhythm, r => saveStretchedFreeSound(r, multi,
-    _.random(2,4,true), _.random(3,10,true)));
+    1, _.random(3,10,true)));
   addFilenamesJson(PATH);
 }
 
@@ -82,15 +86,15 @@ async function queryFreesound(searchTerm: string, filters: FilterMap) {
 async function stretchRandomPartOfSound(path: string, factor: number,
     targetDuration: number) {
   const duration = (await mm.parseFile(path)).format.duration;
+  targetDuration = Math.min(duration*factor, targetDuration);
   const wavpath = path.replace('.mp3', '.wav');
   await execute('sox '+path+' '+wavpath);
-  const strpath = wavpath.replace('.wav', 's.wav');
-  await execute('python node_modules/paulstretch_python/paulstretch_newmethod.py '
-    +wavpath+' '+strpath+' -s '+factor);
-  fs.unlinkSync(wavpath);
+  if (factor != 1) {
+    await execute('python node_modules/paulstretch_python/paulstretch_newmethod.py '
+      +wavpath+' '+wavpath+' -s '+factor);
+  }
   const trimPosition = _.random((duration*factor)-targetDuration, true);
-  await execute('sox '+strpath+' --norm=-3 '+strpath.replace('.wav', '.mp3')
+  await execute('sox '+wavpath+' --norm=-3 '+wavpath.replace('.wav', '.mp3')
     +' trim '+trimPosition+' '+targetDuration);//+' fade 0.01 -0 0.01');
-  fs.unlinkSync(strpath);
-  fs.unlinkSync(path);
+  fs.unlinkSync(wavpath);
 }
