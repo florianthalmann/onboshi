@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Topology, Config } from './topology';
 
-const PATH = 'assets/sounds/perc4/';
+const PATH = 'assets/sounds/full2/';
 const RAMP_TIME = 3;
 
 @Injectable()
@@ -43,14 +43,17 @@ export class OnboshiPlayer {
   }
   
   private async addPlayer(sample: string) {
-    this.players.set(sample, new Player(PATH+sample, () => {
-      const player = this.players.get(sample);
-      player.volume.value = gainToDb(0);
-      player.loop = true;
-      player.loopStart = 0.4;
-      player.loopEnd = player.buffer.duration-0.4;
-      player.start();
-    }).toDestination());
+    return new Promise(resolve => {
+      this.players.set(sample, new Player(PATH+sample, () => {
+        const player = this.players.get(sample);
+        player.volume.value = gainToDb(0);
+        player.loop = true;
+        player.loopStart = 0.4;
+        player.loopEnd = player.buffer.duration-0.4;
+        player.start();
+        resolve();
+      }).toDestination());
+    });
   }
   
   private async removePlayer(sample: string) {

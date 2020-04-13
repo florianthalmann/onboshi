@@ -11,7 +11,7 @@ export interface Config {
 }
 
 const DENSITY = 5;
-const WIDTH_VARIATION = 0.1;
+const WIDTH_VARIATION = 0.3;
 
 export class Topology {
   
@@ -20,7 +20,6 @@ export class Topology {
   constructor(private samples: string[], private size = 1.0) {
     this.samples.forEach(s => this.gainRanges.set(s,
       [this.getRandomRange(), this.getRandomRange()]));
-    console.log([...this.gainRanges.keys()].map(k => k+" "+this.gainRanges.get(k).join(' ')))
   }
   
   getConfigs(x: number, y: number): Config[] {
@@ -46,7 +45,7 @@ export class Topology {
     const refRadius = Math.sqrt(DENSITY)*baseRadius;//density == avg num overlapping
     const variation = WIDTH_VARIATION*refRadius;
     const radius = _.random(refRadius-variation/2, refRadius+variation/2);
-    console.log(position, baseRadius, refRadius, variation, radius);
+    //console.log(position, baseRadius, refRadius, variation, radius);
     return {center: position, radius: radius};
   }
 

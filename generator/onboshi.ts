@@ -31,7 +31,7 @@ async function createSoundMaterial(size = 1) {
   //rhythmic elements
   const rhythm = ['percussion', 'drums', 'rhythm', 'ethnic', 'beat', 'gong',
     'bell', 'chime', 'drum', 'perc', 'shake', 'shaker', 'cymbal', 'roll',
-    'bottle', 'cup', 'africa', 'indonesia', 'sound'];
+    'bottle', 'cup', 'africa', 'indonesia', 'sound', 'tribal', ];
   const single = toMap(['ac_single_event', ['true']]);
   const multi = toMap(['ac_single_event', ['false']]);
   await mapSeries(rhythm, r => saveStretchedFreeSound(r, single,
