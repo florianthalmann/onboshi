@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
-import { Player, gainToDb } from 'tone';
+import { Player, Gain, PingPongDelay, gainToDb } from 'tone';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Topology, Config } from './topology';
+import { Topology, SampleConfig, GLOBALS } from './topology';
 
 const PATH = 'assets/sounds/full2/';
 const RAMP_TIME = 3;
@@ -11,6 +11,8 @@ const RAMP_TIME = 3;
 export class OnboshiPlayer {
   
   private topology: Topology;
+  private delay: PingPongDelay;
+  private mainSend: Gain;
   private players = new Map<string, Player>();
   private fadeoutTimeouts = new Map<string, NodeJS.Timer>();
   
@@ -19,17 +21,27 @@ export class OnboshiPlayer {
   }
   
   async init() {
-    const audio = await this.loadAudioList();
-    this.topology = new Topology(audio);
+    this.delay = new PingPongDelay(1, 0.5).toDestination();
+    this.delay.wet.value = 0.5;
+    console.log(this.delay.wet.value)
+    this.mainSend = new Gain();
+    this.mainSend.connect(this.delay);
+    this.topology = new Topology(await this.loadAudioList());
   }
   
   setPosition(x: number, y: number) {
-    if (this.topology) {
-      this.updatePlayers(this.topology.getConfigs(x, y));
+    if (this.topology && !isNaN(x) && !isNaN(y)) {
+      const config = this.topology.getConfig(x, y);
+      
+      console.log("delay time", config.globals.get(GLOBALS.DELAY_TIME));
+      this.delay.delayTime.linearRampTo(
+        config.globals.get(GLOBALS.DELAY_TIME), RAMP_TIME);
+      
+      this.updatePlayers(config.samples);
     }
   }
   
-  private async updatePlayers(configs: Config[]) {
+  private async updatePlayers(configs: SampleConfig[]) {
     const current = [...this.players.keys()];
     const future = configs.map(c => c.sample);
     //remove disappearing
@@ -52,7 +64,7 @@ export class OnboshiPlayer {
         player.loopEnd = player.buffer.duration-0.4;
         player.start();
         resolve();
-      }).toDestination());
+      }).connect(this.mainSend));
     });
   }
   
