@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
-import { Player, Gain, PingPongDelay, gainToDb } from 'tone';
+import { Player, Gain, PingPongDelay, gainToDb, Destination,
+  Signal, JCReverb } from 'tone';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Topology, SampleConfig, GLOBALS } from './topology';
@@ -12,6 +13,7 @@ export class OnboshiPlayer {
   
   private topology: Topology;
   private delay: PingPongDelay;
+  private reverb: JCReverb;
   private mainSend: Gain;
   private players = new Map<string, Player>();
   private fadeoutTimeouts = new Map<string, NodeJS.Timer>();
@@ -21,24 +23,33 @@ export class OnboshiPlayer {
   }
   
   async init() {
-    this.delay = new PingPongDelay(1, 0.5).toDestination();
-    this.delay.wet.value = 0.5;
-    console.log(this.delay.wet.value)
+    this.delay = new PingPongDelay(1, 0.5);
+    this.reverb = new JCReverb();
     this.mainSend = new Gain();
-    this.mainSend.connect(this.delay);
+    this.mainSend.chain(this.delay, this.reverb, Destination);
     this.topology = new Topology(await this.loadAudioList());
   }
   
   setPosition(x: number, y: number) {
     if (this.topology && !isNaN(x) && !isNaN(y)) {
       const config = this.topology.getConfig(x, y);
-      
-      console.log("delay time", config.globals.get(GLOBALS.DELAY_TIME));
-      this.delay.delayTime.linearRampTo(
-        config.globals.get(GLOBALS.DELAY_TIME), RAMP_TIME);
-      
+      config.globals.forEach((v, k) => this.setParam(k, v));
       this.updatePlayers(config.samples);
     }
+  }
+  
+  private setParam(name: string, value: number) {
+    console.log(name, value);
+    const param = this.getParam(name);
+    if (param instanceof Signal) param.linearRampTo(value, RAMP_TIME);
+  }
+  
+  private getParam(name: string): Signal<"time"> | Signal<"normalRange"> {
+    if (name === GLOBALS.DELAY_TIME) return this.delay.delayTime;
+    if (name === GLOBALS.DELAY_FEEDBACK) return this.delay.feedback;
+    if (name === GLOBALS.DELAY_LEVEL) return this.delay.wet;
+    if (name === GLOBALS.REVERB_ROOM) return this.reverb.roomSize;
+    if (name === GLOBALS.REVERB_LEVEL) return this.reverb.wet;
   }
   
   private async updatePlayers(configs: SampleConfig[]) {
@@ -68,7 +79,7 @@ export class OnboshiPlayer {
     });
   }
   
-  private async removePlayer(sample: string) {
+  private removePlayer(sample: string) {
     if (this.players.has(sample) && !this.fadeoutTimeouts.has(sample)) {
       this.adjustGain(sample, 0);
       this.fadeoutTimeouts.set(sample, setTimeout(() => {

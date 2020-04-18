@@ -11,7 +11,7 @@ interface Range {
 }
 
 export interface Config {
-  globals: Map<number, number>,
+  globals: Map<string, number>,
   samples: SampleConfig[]
 }
 
@@ -21,40 +21,52 @@ export interface SampleConfig {
 }
 
 export enum GLOBALS {
-  DELAY_TIME
+  DELAY_TIME = "delay time",
+  DELAY_FEEDBACK = "delay feedback",
+  DELAY_LEVEL = "delay level",
+  REVERB_ROOM = "reverb room",
+  REVERB_LEVEL = "reverb level"
 }
 
-const DENSITY = 1;
-const WIDTH_VARIATION = 0.3;
+const DENSITY = 1; //avg sources playing simultaneously
+const WIDTH_VARIATION = 0.3; //variation in area widths
 
-const GLOBALS_POINTS = 20;
+const NUM_GLOBALS_POINTS = 20;
 
 export class Topology {
   
   private gainRanges = new Map<string, Range[]>();
-  private delayTimePoints: Point[];
+  private globalPoints = new Map<GLOBALS, Point[]>();
   
   constructor(private samples: string[], private size = 1.0) {
     this.samples.forEach(s => this.gainRanges.set(s,
       [this.getRandomRange(), this.getRandomRange()]));
-    this.delayTimePoints = _.range(0, GLOBALS_POINTS).map(_i =>
-      ({coords: [_.random(size, true), _.random(size, true)],
-        value: _.random(2, true)}));
+    this.addGlobalPoints(GLOBALS.DELAY_TIME, 0, 2);
+    this.addGlobalPoints(GLOBALS.DELAY_LEVEL, 0, 1);
+    this.addGlobalPoints(GLOBALS.DELAY_FEEDBACK, 0, 1);
+    this.addGlobalPoints(GLOBALS.REVERB_ROOM, 0, 1);
+    this.addGlobalPoints(GLOBALS.REVERB_LEVEL, 0, 1);
   }
   
   getConfig(x: number, y: number): Config {
     //avg euclidean dist * value....
-    const globals = new Map<number, number>();
-    globals.set(GLOBALS.DELAY_TIME,
-      this.getWeightedInterpolOfTwoNearest([x, y], this.delayTimePoints));
+    const globals = new Map<string, number>();
+    this.globalPoints.forEach((v, k) => globals.set(k,
+      this.getWeightedInterpOfTwoNearest([x, y], v)));
     const samples = this.samples.map(s => ({sample: s,
         gain: this.getMultiInterpolation([x, y], this.gainRanges.get(s))}))
       .filter(c => c.gain > 0);
     return {globals: globals, samples: samples};
   }
   
-  //not smooth but effective with fades... think about how to improve
-  private getWeightedInterpolOfTwoNearest(coords: number[], points: Point[]) {
+  private addGlobalPoints(param: GLOBALS, min: number, max: number) {
+    this.globalPoints.set(param, _.range(0, NUM_GLOBALS_POINTS).map(_i =>
+      ({coords: [_.random(this.size, true), _.random(this.size, true)],
+        value: _.random(min, max, true)})));
+  }
+  
+  //not smooth but effective with fades... cool that there are jumps
+  private getWeightedInterpOfTwoNearest(coords: number[], points: Point[]) {
     const dists = points.map(p => this.getEuclideanDist(coords, p.coords));
     const nearest = _.sortBy(_.zip(points, dists), pd => pd[1]).slice(0, 2);
     const totalDist = _.sum(nearest.map(n => n[1]));
