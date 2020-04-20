@@ -25,7 +25,9 @@ export enum GLOBALS {
   DELAY_FEEDBACK = "delay feedback",
   DELAY_LEVEL = "delay level",
   REVERB_ROOM = "reverb room",
-  REVERB_LEVEL = "reverb level"
+  REVERB_LEVEL = "reverb level",
+  CHORUS_LEVEL = "chorus level",
+  PHASER_LEVEL = "phaser level"
 }
 
 const DENSITY = 1; //avg sources playing simultaneously
@@ -42,10 +44,12 @@ export class Topology {
     this.samples.forEach(s => this.gainRanges.set(s,
       [this.getRandomRange(), this.getRandomRange()]));
     this.addGlobalPoints(GLOBALS.DELAY_TIME, 0, 2);
-    this.addGlobalPoints(GLOBALS.DELAY_LEVEL, 0, 1);
-    this.addGlobalPoints(GLOBALS.DELAY_FEEDBACK, 0, 1);
+    this.addGlobalPoints(GLOBALS.DELAY_FEEDBACK, 0, 0.9);
+    this.addGlobalPoints(GLOBALS.DELAY_LEVEL, -1, 1);
     this.addGlobalPoints(GLOBALS.REVERB_ROOM, 0, 1);
-    this.addGlobalPoints(GLOBALS.REVERB_LEVEL, 0, 1);
+    this.addGlobalPoints(GLOBALS.REVERB_LEVEL, -1, 1);
+    this.addGlobalPoints(GLOBALS.CHORUS_LEVEL, -1, 1);
+    this.addGlobalPoints(GLOBALS.PHASER_LEVEL, -1, 1);
   }
   
   getConfig(x: number, y: number): Config {
@@ -70,7 +74,8 @@ export class Topology {
     const dists = points.map(p => this.getEuclideanDist(coords, p.coords));
     const nearest = _.sortBy(_.zip(points, dists), pd => pd[1]).slice(0, 2);
     const totalDist = _.sum(nearest.map(n => n[1]));
-    return _.sum(nearest.map(n => n[0].value*(totalDist-n[1])/totalDist));
+    return Math.max(0, 
+      _.sum(nearest.map(n => n[0].value*(totalDist-n[1])/totalDist)));
   }
   
   private getEuclideanDist(p1: number[], p2: number[]) {

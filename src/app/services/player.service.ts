@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { Player, Gain, PingPongDelay, gainToDb, Destination,
-  Signal, JCReverb } from 'tone';
+  Signal, JCReverb, Chorus, Phaser } from 'tone';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Topology, SampleConfig, GLOBALS } from './topology';
@@ -14,6 +14,8 @@ export class OnboshiPlayer {
   private topology: Topology;
   private delay: PingPongDelay;
   private reverb: JCReverb;
+  private chorus: Chorus;
+  private phaser: Phaser;
   private mainSend: Gain;
   private players = new Map<string, Player>();
   private fadeoutTimeouts = new Map<string, NodeJS.Timer>();
@@ -23,10 +25,13 @@ export class OnboshiPlayer {
   }
   
   async init() {
-    this.delay = new PingPongDelay(1, 0.5);
+    this.delay = new PingPongDelay();
     this.reverb = new JCReverb();
+    this.chorus = new Chorus();
+    this.phaser = new Phaser();
     this.mainSend = new Gain();
-    this.mainSend.chain(this.delay, this.reverb, Destination);
+    this.mainSend.chain(this.phaser, this.chorus,
+      this.delay, this.reverb, Destination);
     this.topology = new Topology(await this.loadAudioList());
   }
   
@@ -50,6 +55,8 @@ export class OnboshiPlayer {
     if (name === GLOBALS.DELAY_LEVEL) return this.delay.wet;
     if (name === GLOBALS.REVERB_ROOM) return this.reverb.roomSize;
     if (name === GLOBALS.REVERB_LEVEL) return this.reverb.wet;
+    if (name === GLOBALS.CHORUS_LEVEL) return this.chorus.wet;
+    if (name === GLOBALS.PHASER_LEVEL) return this.phaser.wet;
   }
   
   private async updatePlayers(configs: SampleConfig[]) {
