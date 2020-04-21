@@ -30,7 +30,7 @@ export enum GLOBALS {
   PHASER_LEVEL = "phaser level"
 }
 
-const DENSITY = 1; //avg sources playing simultaneously
+const DENSITY = 5; //avg sources playing simultaneously
 const WIDTH_VARIATION = 0.3; //variation in area widths
 
 const NUM_GLOBALS_POINTS = 20;

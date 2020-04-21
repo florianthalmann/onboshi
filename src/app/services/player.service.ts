@@ -30,8 +30,8 @@ export class OnboshiPlayer {
     this.chorus = new Chorus();
     this.phaser = new Phaser();
     this.mainSend = new Gain();
-    this.mainSend.chain(this.phaser, this.chorus,
-      this.delay, this.reverb, Destination);
+    this.mainSend.chain(this.chorus, this.delay, Destination);//this.phaser, this.chorus,
+      //this.delay, this.reverb, Destination);
     this.topology = new Topology(await this.loadAudioList());
   }
   
