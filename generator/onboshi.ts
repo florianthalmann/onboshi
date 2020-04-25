@@ -3,19 +3,30 @@ import * as https from 'https';
 import * as fs from 'fs';
 import * as mm from 'music-metadata';
 import { mapSeries, toMap, fetchJson, execute } from './util';
+import { Topology } from '../src/app/services/topology';
 
 const URI = "https://freesound.org/apiv2/search/text/?";
 const SOUNDS_URI = "https://freesound.org/apiv2/sounds/";
 const KEY = "DMkQspbGpJ45afW7LgzWan8tcbOzScC262QsYgjG";
-const PATH = 'src/assets/sounds/full2/';
-fs.existsSync(PATH) || fs.mkdirSync(PATH);
+const MATERIAL = 'src/assets/sounds/';
+const TOPOLOGIES = 'src/assets/topologies/';
 
 type FilterMap = Map<string, number[] | string[]>;
 
-createSoundMaterial();
+//createSoundMaterial('full2');
+createTopology('topo1', 'full2');
+
+async function createTopology(name: string, materialName: string) {
+  const material = JSON.parse(
+    fs.readFileSync(MATERIAL+materialName+'/_content.json', 'utf8'));
+  const topology = new Topology().generate(material).getConfig();
+  fs.writeFileSync(TOPOLOGIES+name+'.json', JSON.stringify(topology));
+}
 
 //TODO: make sure both categories are more or less equal
-async function createSoundMaterial(size = 1) {
+async function createSoundMaterial(name: string, size = 1) {
+  const path = MATERIAL+name+'/';
+  fs.existsSync(path) || fs.mkdirSync(path);
   //textures
   const textures = ['atmosphere', 'ambient', 'soundscape', 'abstract']//, 'electronic', 'soundscape'];
   const keys = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"];
@@ -27,7 +38,7 @@ async function createSoundMaterial(size = 1) {
   /*await mapSeries(textures, t => mapSeries(kinds, k =>
     saveStretchedFreeSound(t, k, _.random(2,10,true), _.random(1,5,true))));*/
   await mapSeries(kinds, k => saveStretchedFreeSound(
-    _.sample(textures), k, _.random(2,10,true), _.random(1,5,true)));
+    _.sample(textures), k, _.random(2,10,true), _.random(1,5,true), path));
   //rhythmic elements
   const rhythm = ['percussion', 'drums', 'rhythm', 'ethnic', 'beat', 'gong',
     'bell', 'chime', 'drum', 'perc', 'shake', 'shaker', 'cymbal', 'roll',
@@ -35,35 +46,35 @@ async function createSoundMaterial(size = 1) {
   const single = toMap(['ac_single_event', ['true']]);
   const multi = toMap(['ac_single_event', ['false']]);
   await mapSeries(rhythm, r => saveStretchedFreeSound(r, single,
-    1, _.random(1,10,true)));
+    1, _.random(1,10,true), path));
   //less stretched, longer loops....
   await mapSeries(rhythm, r => saveStretchedFreeSound(r, multi,
-    1, _.random(3,10,true)));
-  addFilenamesJson(PATH);
+    1, _.random(3,10,true), path));
+  addFilenamesJson(path);
 }
 
 function addFilenamesJson(dir: string) {
-  fs.writeFileSync(dir+'_contents.json', JSON.stringify(
+  fs.writeFileSync(dir+'_content.json', JSON.stringify(
     fs.readdirSync(dir).filter(f => _.includes(f, '.mp3'))));
 }
 
 async function saveStretchedFreeSound(searchTerm: string, filters: FilterMap,
-    factor: number, duration: number) {
+    factor: number, duration: number, path: string) {
   filters.set("duration", [1, 10]);
-  const filename = await getFreeSound(searchTerm, filters);
+  const filename = await getFreeSound(searchTerm, filters, path);
   if (filename) {
     console.log("stretching", filename, factor, duration);
     return stretchRandomPartOfSound(filename, factor, duration);
   }
 }
 
-async function getFreeSound(searchTerm: string, filters: FilterMap) {
+async function getFreeSound(searchTerm: string, filters: FilterMap, path: string) {
   const randomSound = _.sample(await queryFreesound(searchTerm, filters));
   if (randomSound) {
     console.log(JSON.stringify(randomSound));
     const info = (await fetchJson(SOUNDS_URI+randomSound.id+"?token="+KEY))
     const preview = info.previews["preview-lq-mp3"];
-    const filename = PATH+searchTerm+randomSound.id+".mp3";
+    const filename = path+searchTerm+randomSound.id+".mp3";
     const file = fs.createWriteStream(filename);
     let stream = await new Promise<fs.WriteStream>(resolve =>
       https.get(preview, response => resolve(response.pipe(file))));

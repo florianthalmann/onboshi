@@ -24,9 +24,9 @@ export class HomePage {
   }
   
   private geomove() {
-    //35.03 35.07, 135.77 135.8
-    const minLat = 35.03, maxLat = 35.07;
-    const minLong = 135.77, maxLong = 135.8;
+    //35.03 35.07, 135.765 135.8
+    const minLat = 35.03, maxLat = 35.065;
+    const minLong = 135.76, maxLong = 135.8;
     this.geolocation.watchPosition().subscribe((data) => {
      console.log(data.coords.latitude, data.coords.longitude)
      this.x = (data.coords.longitude-minLong)/(maxLong-minLong)*1000;

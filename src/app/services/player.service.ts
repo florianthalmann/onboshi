@@ -3,9 +3,10 @@ import { Player, Gain, PingPongDelay, gainToDb, Destination,
   Signal, JCReverb, Chorus, Phaser } from 'tone';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Topology, SampleConfig, GLOBALS } from './topology';
+import { Topology, TopologyConfig, SampleState, GLOBALS } from './topology';
 
 const PATH = 'assets/sounds/full2/';
+const TOPOLOGIES = 'assets/topologies/';
 const RAMP_TIME = 3;
 
 @Injectable()
@@ -32,12 +33,24 @@ export class OnboshiPlayer {
     this.mainSend = new Gain();
     this.mainSend.chain(this.chorus, this.delay, Destination);//this.phaser, this.chorus,
       //this.delay, this.reverb, Destination);
-    this.topology = new Topology(await this.loadAudioList());
   }
   
-  setPosition(x: number, y: number) {
-    if (this.topology && !isNaN(x) && !isNaN(y)) {
-      const config = this.topology.getConfig(x, y);
+  private async loadOrGenerateTopology(name: string) {
+    const path = TOPOLOGIES+name+'.json';
+    this.topology = new Topology();
+    const loaded = <TopologyConfig>await this.loadJson(path);
+    console.log(loaded);
+    if (loaded) {
+      this.topology = new Topology().setConfig(loaded);
+    } else {
+      this.topology = new Topology().generate(await this.loadAudioList());
+    }
+  }
+  
+  async setPosition(x: number, y: number) {
+    if (!this.topology) await this.loadOrGenerateTopology('topo1');
+    if (!isNaN(x) && !isNaN(y)) {
+      const config = this.topology.getState(x, y);
       config.globals.forEach((v, k) => this.setParam(k, v));
       this.updatePlayers(config.samples);
     }
@@ -59,7 +72,7 @@ export class OnboshiPlayer {
     if (name === GLOBALS.PHASER_LEVEL) return this.phaser.wet;
   }
   
-  private async updatePlayers(configs: SampleConfig[]) {
+  private async updatePlayers(configs: SampleState[]) {
     const current = [...this.players.keys()];
     const future = configs.map(c => c.sample);
     //remove disappearing
@@ -109,8 +122,11 @@ export class OnboshiPlayer {
   }
   
   private loadAudioList(): Promise<string[]> {
-    return <Promise<string[]>>this.httpClient.get(PATH+'_contents.json')
-      .toPromise();
+    return <Promise<string[]>>this.loadJson(PATH+'_content.json');
+  }
+  
+  private async loadJson(path: string) {
+    return this.httpClient.get(path).toPromise().catch(_o => undefined);
   }
 
 }

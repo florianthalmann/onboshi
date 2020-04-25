@@ -10,14 +10,29 @@ interface Range {
   radius: number 
 }
 
-export interface Config {
+export interface State {
   globals: Map<string, number>,
-  samples: SampleConfig[]
+  samples: SampleState[]
 }
 
-export interface SampleConfig {
+export interface SampleState {
   sample: string,
   gain: number
+}
+
+export interface TopologyConfig {
+  size: number,
+  samples: string[],
+  gainRanges: Ranges,
+  globals: Globals
+}
+
+interface Ranges {
+  [key: string]: Range[]
+}
+
+interface Globals {
+  [key: string]: Point[]
 }
 
 export enum GLOBALS {
@@ -37,12 +52,24 @@ const NUM_GLOBALS_POINTS = 20;
 
 export class Topology {
   
-  private gainRanges = new Map<string, Range[]>();
-  private globalPoints = new Map<GLOBALS, Point[]>();
+  private config: TopologyConfig;
   
-  constructor(private samples: string[], private size = 1.0) {
-    this.samples.forEach(s => this.gainRanges.set(s,
-      [this.getRandomRange(), this.getRandomRange()]));
+  getState(x: number, y: number): State {
+    //avg euclidean dist * value....
+    const globals = new Map<string, number>();
+    console.log(this.config);
+    [...Object.entries(this.config.globals)].forEach(([k, v]) =>
+      globals.set(k, this.getWeightedInterpOfTwoNearest([x, y], v)));
+    const samples = this.config.samples.map(s => ({sample: s,
+        gain: this.getMultiInterpolation([x, y], this.config.gainRanges[s])}))
+      .filter(c => c.gain > 0);
+    return {globals: globals, samples: samples};
+  }
+  
+  generate(samples: string[], size = 1.0) {
+    this.config = {size: size, samples: samples, gainRanges: {}, globals: {}};
+    samples.forEach(s => this.config.gainRanges[s] =
+      [this.getRandomRange(), this.getRandomRange()]);
     this.addGlobalPoints(GLOBALS.DELAY_TIME, 0, 2);
     this.addGlobalPoints(GLOBALS.DELAY_FEEDBACK, 0, 0.9);
     this.addGlobalPoints(GLOBALS.DELAY_LEVEL, -1, 1);
@@ -50,23 +77,23 @@ export class Topology {
     this.addGlobalPoints(GLOBALS.REVERB_LEVEL, -1, 1);
     this.addGlobalPoints(GLOBALS.CHORUS_LEVEL, -1, 1);
     this.addGlobalPoints(GLOBALS.PHASER_LEVEL, -1, 1);
+    return this;
   }
   
-  getConfig(x: number, y: number): Config {
-    //avg euclidean dist * value....
-    const globals = new Map<string, number>();
-    this.globalPoints.forEach((v, k) => globals.set(k,
-      this.getWeightedInterpOfTwoNearest([x, y], v)));
-    const samples = this.samples.map(s => ({sample: s,
-        gain: this.getMultiInterpolation([x, y], this.gainRanges.get(s))}))
-      .filter(c => c.gain > 0);
-    return {globals: globals, samples: samples};
+  setConfig(config: TopologyConfig) {
+    this.config = config;
+    return this;
+  }
+  
+  getConfig() {
+    return this.config;
   }
   
   private addGlobalPoints(param: GLOBALS, min: number, max: number) {
-    this.globalPoints.set(param, _.range(0, NUM_GLOBALS_POINTS).map(_i =>
-      ({coords: [_.random(this.size, true), _.random(this.size, true)],
-        value: _.random(min, max, true)})));
+    this.config.globals[param] = _.range(0, NUM_GLOBALS_POINTS).map(_i =>
+      ({coords: [_.random(this.config.size, true),
+          _.random(this.config.size, true)],
+        value: _.random(min, max, true)}));
   }
   
   //not smooth but effective with fades... cool that there are jumps
@@ -89,13 +116,13 @@ export class Topology {
   
   private getInterpolation(coord: number, range: Range) {
     const absdist = Math.abs(range.center-coord);
-    const distance = Math.min(absdist, this.size-absdist);
+    const distance = Math.min(absdist, this.config.size-absdist);
     return Math.max(0, (range.radius-distance)/range.radius);
   }
   
   private getRandomRange(): Range {
-    const position = _.random(this.size, true);
-    const baseRadius = this.size/Math.sqrt(this.samples.length)/2;//nonoverlapping
+    const position = _.random(this.config.size, true);
+    const baseRadius = this.config.size/Math.sqrt(this.config.samples.length)/2;//nonoverlapping
     const refRadius = Math.sqrt(DENSITY)*baseRadius;//density == avg num overlapping
     const variation = WIDTH_VARIATION*refRadius;
     const radius = _.random(refRadius-variation/2, refRadius+variation/2);
