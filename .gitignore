@@ -32,4 +32,5 @@ npm-debug.log*
 
 package-lock.json
 src/assets/sounds
+src/assets/topologies
 resources/

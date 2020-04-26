@@ -7,7 +7,7 @@ import { Topology, TopologyConfig, SampleState, GLOBALS } from './topology';
 
 const PATH = 'assets/sounds/full2/';
 const TOPOLOGIES = 'assets/topologies/';
-const RAMP_TIME = 3;
+export const TRANS_TIME = 3; //seconds
 
 @Injectable()
 export class OnboshiPlayer {
@@ -59,7 +59,7 @@ export class OnboshiPlayer {
   private setParam(name: string, value: number) {
     console.log(name, value);
     const param = this.getParam(name);
-    if (param instanceof Signal) param.linearRampTo(value, RAMP_TIME);
+    if (param instanceof Signal) param.linearRampTo(value, TRANS_TIME);
   }
   
   private getParam(name: string): Signal<"time"> | Signal<"normalRange"> {
@@ -107,7 +107,7 @@ export class OnboshiPlayer {
         const player = this.players.get(sample);
         this.players.delete(sample);
         player.stop().dispose();
-      }, RAMP_TIME*1000));
+      }, TRANS_TIME*1000));
     }
   }
   
@@ -117,7 +117,7 @@ export class OnboshiPlayer {
         clearTimeout(this.fadeoutTimeouts.get(sample));
         this.fadeoutTimeouts.delete(sample);
       }
-      this.players.get(sample).volume.linearRampTo(gainToDb(gain), RAMP_TIME);
+      this.players.get(sample).volume.linearRampTo(gainToDb(gain), TRANS_TIME);
     }
   }
   
