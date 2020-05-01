@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import { Player, Gain, PingPongDelay, gainToDb, Destination,
-  Signal, JCReverb, Chorus, Phaser } from 'tone';
+  Signal, Param, Chorus, Reverb, FeedbackDelay, Vibrato,
+  Chebyshev, AutoWah, context, Time } from 'tone';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Topology, TopologyConfig, SampleState, GLOBALS } from './topology';
@@ -13,26 +14,33 @@ export const TRANS_TIME = 3; //seconds
 export class OnboshiPlayer {
   
   private topology: Topology;
-  private delay: PingPongDelay;
-  private reverb: JCReverb;
+  private delay1: FeedbackDelay;
+  private delay2: PingPongDelay;
+  private reverb: Reverb;
   private chorus: Chorus;
-  private phaser: Phaser;
+  private cheby: Chebyshev;
+  private vibrato: Vibrato;
+  private wah: AutoWah;
   private mainSend: Gain;
   private players = new Map<string, Player>();
   private fadeoutTimeouts = new Map<string, NodeJS.Timer>();
   
   constructor(private httpClient: HttpClient) {
     this.init();
+    context.latencyHint = 'playback';
   }
   
   async init() {
-    this.delay = new PingPongDelay();
-    this.reverb = new JCReverb();
     this.chorus = new Chorus();
-    this.phaser = new Phaser();
+    this.vibrato = new Vibrato();
+    this.wah = new AutoWah();
+    this.cheby = new Chebyshev(50);
+    this.delay1 = new FeedbackDelay();
+    this.delay2 = new PingPongDelay();
+    this.reverb = new Reverb(3);
     this.mainSend = new Gain();
-    this.mainSend.chain(this.chorus, this.delay, Destination);//this.phaser, this.chorus,
-      //this.delay, this.reverb, Destination);
+    this.mainSend.chain(this.chorus, this.vibrato, this.wah, this.cheby,
+      this.delay1, this.delay2, this.reverb, Destination);
   }
   
   private async loadOrGenerateTopology(name: string) {
@@ -60,16 +68,23 @@ export class OnboshiPlayer {
     console.log(name, value);
     const param = this.getParam(name);
     if (param instanceof Signal) param.linearRampTo(value, TRANS_TIME);
+    else this.reverb.decay = value;
   }
   
-  private getParam(name: string): Signal<"time"> | Signal<"normalRange"> {
-    if (name === GLOBALS.DELAY_TIME) return this.delay.delayTime;
-    if (name === GLOBALS.DELAY_FEEDBACK) return this.delay.feedback;
-    if (name === GLOBALS.DELAY_LEVEL) return this.delay.wet;
-    if (name === GLOBALS.REVERB_ROOM) return this.reverb.roomSize;
-    if (name === GLOBALS.REVERB_LEVEL) return this.reverb.wet;
+  private getParam(name: string): Signal<"time"> | Signal<"normalRange">
+      | Signal<"frequency"> | Param<"time"> | Param<"normalRange"> | any {
     if (name === GLOBALS.CHORUS_LEVEL) return this.chorus.wet;
-    if (name === GLOBALS.PHASER_LEVEL) return this.phaser.wet;
+    if (name === GLOBALS.VIBRATO_LEVEL) return this.vibrato.wet;
+    if (name === GLOBALS.VIBRATO_FREQUENCY) return this.vibrato.frequency;
+    if (name === GLOBALS.WAH_LEVEL) return this.wah.wet;
+    if (name === GLOBALS.CHEBYCHEV_LEVEL) return this.cheby.wet;
+    if (name === GLOBALS.DELAY_TIME) return this.delay1.delayTime;
+    if (name === GLOBALS.DELAY_FEEDBACK) return this.delay1.feedback;
+    if (name === GLOBALS.DELAY_LEVEL) return this.delay1.wet;
+    if (name === GLOBALS.DELAY2_TIME) return this.delay2.delayTime;
+    if (name === GLOBALS.DELAY2_FEEDBACK) return this.delay2.feedback;
+    if (name === GLOBALS.DELAY2_LEVEL) return this.delay2.wet;
+    if (name === GLOBALS.REVERB_LEVEL) return this.reverb.wet;
   }
   
   private async updatePlayers(configs: SampleState[]) {

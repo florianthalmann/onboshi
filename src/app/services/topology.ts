@@ -36,13 +36,19 @@ interface Globals {
 }
 
 export enum GLOBALS {
+  CHORUS_LEVEL = "chorus level",
+  VIBRATO_LEVEL = "vibrato level",
+  VIBRATO_FREQUENCY = "vibrato frequency",
+  WAH_LEVEL = "wah level",
+  CHEBYCHEV_LEVEL = "chebychev level",
   DELAY_TIME = "delay time",
   DELAY_FEEDBACK = "delay feedback",
   DELAY_LEVEL = "delay level",
+  DELAY2_TIME = "delay2 time",
+  DELAY2_FEEDBACK = "delay2 feedback",
+  DELAY2_LEVEL = "delay2 level",
   REVERB_ROOM = "reverb room",
-  REVERB_LEVEL = "reverb level",
-  CHORUS_LEVEL = "chorus level",
-  PHASER_LEVEL = "phaser level"
+  REVERB_LEVEL = "reverb level"
 }
 
 const DENSITY = 5; //avg sources playing simultaneously
@@ -70,13 +76,19 @@ export class Topology {
     this.config = {size: size, samples: samples, gainRanges: {}, globals: {}};
     samples.forEach(s => this.config.gainRanges[s] =
       [this.getRandomRange(), this.getRandomRange()]);
+    this.addGlobalPoints(GLOBALS.CHORUS_LEVEL, -1, 1);
+    this.addGlobalPoints(GLOBALS.VIBRATO_LEVEL, -1, 1);
+    this.addGlobalPoints(GLOBALS.VIBRATO_FREQUENCY, 0, 2);
+    this.addGlobalPoints(GLOBALS.WAH_LEVEL, -1, 1);
+    this.addGlobalPoints(GLOBALS.CHEBYCHEV_LEVEL, -1, 1);
     this.addGlobalPoints(GLOBALS.DELAY_TIME, 0, 2);
     this.addGlobalPoints(GLOBALS.DELAY_FEEDBACK, 0, 0.9);
     this.addGlobalPoints(GLOBALS.DELAY_LEVEL, -1, 1);
+    this.addGlobalPoints(GLOBALS.DELAY2_TIME, 0, 2);
+    this.addGlobalPoints(GLOBALS.DELAY2_FEEDBACK, 0, 0.9);
+    this.addGlobalPoints(GLOBALS.DELAY2_LEVEL, -1, 1);
     this.addGlobalPoints(GLOBALS.REVERB_ROOM, 0, 1);
     this.addGlobalPoints(GLOBALS.REVERB_LEVEL, -1, 1);
-    this.addGlobalPoints(GLOBALS.CHORUS_LEVEL, -1, 1);
-    this.addGlobalPoints(GLOBALS.PHASER_LEVEL, -1, 1);
     return this;
   }
   

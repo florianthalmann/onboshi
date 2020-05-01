@@ -15,8 +15,8 @@ export class HomePage {
   protected y = 0;
   
   constructor(private player: OnboshiPlayer, private geolocation: Geolocation) {
-    //this.automove();
-    this.geomove();
+    this.automove();
+    //this.geomove();
   }
   
   protected updatePosition() {
