@@ -15,6 +15,8 @@ export class HomePage {
 
   protected x = 0;
   protected y = 0;
+  protected status = "";
+  private numGeolocUpdates = 0;
   
   constructor(private player: OnboshiPlayer, private geolocation: Geolocation,
       private backgroundGeolocation: BackgroundGeolocation) {
@@ -32,7 +34,9 @@ export class HomePage {
     //35.042 35.052, 135.782 135.792 (一乗寺)
     const minLat = 35.042, maxLat = 35.052;
     const minLong = 135.782, maxLong = 135.792;
-    console.log(lat, long);
+    this.status = ++this.numGeolocUpdates
+     + ': lat: ' + _.round(lat, 5) + ', long: ' + _.round(long, 5);
+    console.log(this.numGeolocUpdates, lat, long);
     this.x = (long-minLong)/(maxLong-minLong)*1000;
     this.y = (lat-minLat)/(maxLat-minLat)*1000;
     this.updatePosition();

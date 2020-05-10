@@ -86,9 +86,10 @@ export class Topology {
     //avg euclidean dist * value....
     const params = _.mapValues(this.config.paramPoints, v =>
       this.getWeightedInterpOfTwoNearest([x, y], v));
-    const sources = this.config.sources.map(s => ({sample: s.sample,
+    //only one source per sample...
+    const sources = _.uniqBy(this.config.sources.map(s => ({sample: s.sample,
         gain: this.getMultiInterpolation([x, y], s.gainRanges)}))
-      .filter(c => c.gain > 0);
+      .filter(c => c.gain > 0), s => s.sample);
     return {sources: sources, params: params};
   }
   

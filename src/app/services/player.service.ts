@@ -1,12 +1,13 @@
 import * as _ from 'lodash';
 import { Player, Gain, PingPongDelay, gainToDb, Destination,
   Signal, Param, Chorus, FeedbackDelay, Vibrato,
-  Chebyshev, AutoWah, context } from 'tone';
+  Chebyshev, AutoWah, context, start } from 'tone';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Topology, TopologyConfig, SourceState, PARAMS } from './topology';
 
-const PATH = 'assets/sounds/full2/';
+const TOPO = 'more1';
+const PATH = 'assets/sounds/more/';
 const TOPOLOGIES = 'assets/topologies/';
 export const TRANS_TIME = 3; //seconds
 
@@ -43,6 +44,16 @@ export class OnboshiPlayer {
       this.delay1, this.delay2, Destination); //this.reverb, Destination);
   }
   
+  async setPosition(x: number, y: number) {
+    if (context.state === 'suspended') start();
+    if (!this.topology) await this.loadOrGenerateTopology(TOPO);
+    if (!isNaN(x) && !isNaN(y)) {
+      const config = this.topology.getState(x, y);
+      _.forEach(config.params, (v,k) => this.setParam(k, v));
+      this.updatePlayers(config.sources);
+    }
+  }
+  
   private async loadOrGenerateTopology(name: string) {
     const path = TOPOLOGIES+name+'.json';
     this.topology = new Topology();
@@ -51,15 +62,6 @@ export class OnboshiPlayer {
       this.topology = new Topology().setConfig(loaded);
     } else {
       this.topology = new Topology().generate(await this.loadAudioList());
-    }
-  }
-  
-  async setPosition(x: number, y: number) {
-    if (!this.topology) await this.loadOrGenerateTopology('topo1');
-    if (!isNaN(x) && !isNaN(y)) {
-      const config = this.topology.getState(x, y);
-      _.forEach(config.params, (v,k) => this.setParam(k, v));
-      this.updatePlayers(config.sources);
     }
   }
   
@@ -92,7 +94,7 @@ export class OnboshiPlayer {
     const toRemove = _.difference(current, future);
     toRemove.map(s => this.removePlayer(s));
     //add and adjust future
-    const toAdd = _.difference(future, current);
+    const toAdd = _.uniq(_.difference(future, current));
     await Promise.all(toAdd.map(s => this.addPlayer(s)));
     configs.forEach(c => this.adjustGain(c.sample, c.gain));
     console.log("num sources", future.length);
