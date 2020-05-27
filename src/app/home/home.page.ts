@@ -45,9 +45,10 @@ export class HomePage {
   private async geomove() {
     try {
       await this.backgroundGeolocation.configure({
-        desiredAccuracy: 10,
-        stationaryRadius: 20,
-        distanceFilter: 30,
+        desiredAccuracy: 0,
+        //stationaryRadius: 10,
+        fastestInterval: 1000,
+        distanceFilter: 10,
         debug: true, //  enable this hear sounds for background-geolocation life-cycle.
         stopOnTerminate: true, // enable this to clear background location settings when the app terminates
       });
