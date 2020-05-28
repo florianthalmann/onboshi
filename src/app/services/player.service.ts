@@ -52,7 +52,7 @@ export class OnboshiPlayer {
     if (!isNaN(x) && !isNaN(y)) {
       const config = this.topology.getState(x, y);
       _.forEach(config.params, (v,k) => this.setParam(k, v));
-      this.updatePlayers(config.sources);
+      return this.updatePlayers(config.sources);
     }
   }
   
@@ -99,7 +99,7 @@ export class OnboshiPlayer {
     const toAdd = _.uniq(_.difference(future, current));
     await Promise.all(toAdd.map(s => this.addPlayer(s)));
     configs.forEach(c => this.adjustGain(c.sample, c.gain));
-    console.log("num sources", future.length);
+    return future.length; //current num sources
   }
   
   private async addPlayer(sample: string) {
