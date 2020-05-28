@@ -4,9 +4,11 @@ import { Player, Gain, PingPongDelay, gainToDb, Destination,
   Chebyshev, AutoWah, context, start } from 'tone';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Topology, TopologyConfig, SourceState, PARAMS } from './topology';
+import { TopologyConfig, SourceState } from './types';
+import { PARAMS } from './consts';
+import { Topology, GeoTopologyGenerator } from './topology';
 
-const TOPO = 'more1';
+const TOPO = 'moore1';
 const PATH = 'assets/sounds/more/';
 const TOPOLOGIES = 'assets/topologies/';
 export const TRANS_TIME = 3; //seconds
@@ -56,12 +58,12 @@ export class OnboshiPlayer {
   
   private async loadOrGenerateTopology(name: string) {
     const path = TOPOLOGIES+name+'.json';
-    this.topology = new Topology();
     const loaded = <TopologyConfig>await this.loadJson(path);
     if (loaded) {
-      this.topology = new Topology().setConfig(loaded);
+      this.topology = new Topology(loaded);
     } else {
-      this.topology = new Topology().generate(await this.loadAudioList());
+      const audio = await this.loadAudioList();
+      this.topology = new Topology(new GeoTopologyGenerator(audio).generate());
     }
   }
   
