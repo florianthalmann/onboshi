@@ -8,7 +8,7 @@ import { TopologyConfig, SourceState } from './types';
 import { PARAMS } from './consts';
 import { Topology, GeoTopologyGenerator } from './topology';
 
-const TOPO = 'moore1';
+const TOPO = 'more2';
 const PATH = 'assets/sounds/more/';
 const TOPOLOGIES = 'assets/topologies/';
 export const TRANS_TIME = 3; //seconds

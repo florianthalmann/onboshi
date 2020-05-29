@@ -3,64 +3,89 @@ import * as https from 'https';
 import * as fs from 'fs';
 import * as mm from 'music-metadata';
 import { mapSeries, toMap, fetchJson, execute } from './util';
-import { Topology } from '../src/app/services/topology';
+import { GeoTopologyGenerator } from '../src/app/services/topology';
 
 const URI = "https://freesound.org/apiv2/search/text/?";
 const SOUNDS_URI = "https://freesound.org/apiv2/sounds/";
 const KEY = "DMkQspbGpJ45afW7LgzWan8tcbOzScC262QsYgjG";
 const MATERIAL = 'src/assets/sounds/';
 const TOPOLOGIES = 'src/assets/topologies/';
+const MAX_DURATION = 20;
 
 type FilterMap = Map<string, number[] | string[]>;
 
-//createSoundMaterial('full2');
-createTopology('topo1', 'full2');
+createSoundMaterial('even');
+//updateFilenamesJson('more');
+//createTopology('more2', 'more');
 
 async function createTopology(name: string, materialName: string) {
   const material = JSON.parse(
     fs.readFileSync(MATERIAL+materialName+'/_content.json', 'utf8'));
-  const topology = new Topology().generate(material).getConfig();
+  const topology = new GeoTopologyGenerator(material).generate();
   fs.writeFileSync(TOPOLOGIES+name+'.json', JSON.stringify(topology));
 }
 
-//TODO: make sure both categories are more or less equal
-async function createSoundMaterial(name: string, size = 1) {
+async function createSoundMaterial(name: string, size = 100) {
   const path = MATERIAL+name+'/';
   fs.existsSync(path) || fs.mkdirSync(path);
   //textures
-  const textures = ['atmosphere', 'ambient', 'soundscape', 'abstract']//, 'electronic', 'soundscape'];
-  const keys = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"];
-  const minor = keys.map(k => toMap(['ac_tonality', ['"'+k+' minor"']]));
-  const major = keys.map(k => toMap(['ac_tonality', ['"'+k+' major"']]));
-  const pitches: FilterMap[] = _.sampleSize(_.range(0, 127), 24).map(p =>
-    toMap(['ac_note_midi', [p]]));
-  const kinds: FilterMap[] = _.flatten([minor, major, pitches]);
-  /*await mapSeries(textures, t => mapSeries(kinds, k =>
-    saveStretchedFreeSound(t, k, _.random(2,10,true), _.random(1,5,true))));*/
-  await mapSeries(kinds, k => saveStretchedFreeSound(
-    _.sample(textures), k, _.random(2,10,true), _.random(1,5,true), path));
+  const textures = ['atmosphere', 'ambient', 'soundscape', 'abstract',
+    'harmonic', 'smooth', 'pitch', 'chord', 'vibe', 'texture',
+    'harmony', 'warm', 'instrument', 'acoustic', 'synth', 'deep', 'pleasant',
+    'cool', 'hot']
+  await createMaterial(path, Math.round(size/2), textures, getKeyAndPitchFilters(),
+    [1,MAX_DURATION], [2,10]);
   //rhythmic elements
   const rhythm = ['percussion', 'drums', 'rhythm', 'ethnic', 'beat', 'gong',
     'bell', 'chime', 'drum', 'perc', 'shake', 'shaker', 'cymbal', 'roll',
-    'bottle', 'cup', 'africa', 'indonesia', 'sound', 'tribal', ];
+    'bottle', 'cup', 'africa', 'indonesia', 'sound', 'tribal', 'china',
+    'japan', 'crackle'];
   const single = toMap(['ac_single_event', ['true']]);
   const multi = toMap(['ac_single_event', ['false']]);
-  await mapSeries(rhythm, r => saveStretchedFreeSound(r, single,
-    1, _.random(1,10,true), path));
-  //less stretched, longer loops....
-  await mapSeries(rhythm, r => saveStretchedFreeSound(r, multi,
-    1, _.random(3,10,true), path));
-  addFilenamesJson(path);
+  await createMaterial(path, Math.round(size/4), rhythm, [single], [1,MAX_DURATION]);
+  //longer loops....
+  await createMaterial(path, Math.round(size/4), rhythm, [multi], [3,MAX_DURATION]);
+  updateFilenamesJson(name);
 }
 
-function addFilenamesJson(dir: string) {
+async function createMaterial(path: string, count: number, keywords: string[],
+    filters: FilterMap[], durationRange: [number, number],
+    stretchRange?: [number, number]) {
+  //evenly distributed keys
+  const keys = _.flatten(_.concat(
+    _.times(Math.floor(count/keywords.length), _.constant(keywords)),
+    _.sampleSize(keywords, modForReal(count, keywords.length))));
+  return mapSeries(keys, k => saveStretchedFreeSound(
+    k, _.sample(filters),
+    stretchRange ? _.random(stretchRange[0], stretchRange[1], true) : 1,
+    _.random(durationRange[0], durationRange[1], true), path
+  ));
+}
+
+function modForReal(n: number, mod: number) {
+  return ((n%mod)+mod)%mod;
+}
+
+function getKeyAndPitchFilters(): FilterMap[] {
+  //24 keys
+  const keys = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"];
+  const minor = keys.map(k => toMap(['ac_tonality', ['"'+k+' minor"']]));
+  const major = keys.map(k => toMap(['ac_tonality', ['"'+k+' major"']]));
+  //24 random pitches
+  const pitches: FilterMap[] = _.sampleSize(_.range(0, 127), 24).map(p =>
+    toMap(['ac_note_midi', [p]]));
+  return _.flatten([minor, major, pitches]);
+}
+
+function updateFilenamesJson(name: string) {
+  const dir = MATERIAL+name+'/';
   fs.writeFileSync(dir+'_content.json', JSON.stringify(
     fs.readdirSync(dir).filter(f => _.includes(f, '.mp3'))));
 }
 
 async function saveStretchedFreeSound(searchTerm: string, filters: FilterMap,
     factor: number, duration: number, path: string) {
-  filters.set("duration", [1, 10]);
+  filters.set("duration", [1, MAX_DURATION]);
   const filename = await getFreeSound(searchTerm, filters, path);
   if (filename) {
     console.log("stretching", filename, factor, duration);
