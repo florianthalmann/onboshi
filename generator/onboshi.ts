@@ -10,11 +10,10 @@ const SOUNDS_URI = "https://freesound.org/apiv2/sounds/";
 const KEY = "DMkQspbGpJ45afW7LgzWan8tcbOzScC262QsYgjG";
 const MATERIAL = 'src/assets/sounds/';
 const TOPOLOGIES = 'src/assets/topologies/';
-const MAX_DURATION = 20;
 
 type FilterMap = Map<string, number[] | string[]>;
 
-createSoundMaterial('even');
+createSoundMaterial('even3');
 //updateFilenamesJson('more');
 //createTopology('more2', 'more');
 
@@ -34,7 +33,7 @@ async function createSoundMaterial(name: string, size = 100) {
     'harmony', 'warm', 'instrument', 'acoustic', 'synth', 'deep', 'pleasant',
     'cool', 'hot']
   await createMaterial(path, Math.round(size/2), textures, getKeyAndPitchFilters(),
-    [1,MAX_DURATION], [2,10]);
+    [1,10], [2,10]);
   //rhythmic elements
   const rhythm = ['percussion', 'drums', 'rhythm', 'ethnic', 'beat', 'gong',
     'bell', 'chime', 'drum', 'perc', 'shake', 'shaker', 'cymbal', 'roll',
@@ -42,21 +41,21 @@ async function createSoundMaterial(name: string, size = 100) {
     'japan', 'crackle'];
   const single = toMap(['ac_single_event', ['true']]);
   const multi = toMap(['ac_single_event', ['false']]);
-  await createMaterial(path, Math.round(size/4), rhythm, [single], [1,MAX_DURATION]);
+  await createMaterial(path, Math.round(size/4), rhythm, [single], [1,10]);
   //longer loops....
-  await createMaterial(path, Math.round(size/4), rhythm, [multi], [3,MAX_DURATION]);
+  await createMaterial(path, Math.round(size/4), rhythm, [multi], [3,20]);
   updateFilenamesJson(name);
 }
 
 async function createMaterial(path: string, count: number, keywords: string[],
     filters: FilterMap[], durationRange: [number, number],
     stretchRange?: [number, number]) {
-  //evenly distributed keys
-  const keys = _.flatten(_.concat(
+  //evenly distributed search terms
+  const terms = _.flatten(_.concat(
     _.times(Math.floor(count/keywords.length), _.constant(keywords)),
     _.sampleSize(keywords, modForReal(count, keywords.length))));
-  return mapSeries(keys, k => saveStretchedFreeSound(
-    k, _.sample(filters),
+  return mapSeries(terms, t => saveStretchedFreeSound(
+    t, _.sample(filters),
     stretchRange ? _.random(stretchRange[0], stretchRange[1], true) : 1,
     _.random(durationRange[0], durationRange[1], true), path
   ));
@@ -85,7 +84,9 @@ function updateFilenamesJson(name: string) {
 
 async function saveStretchedFreeSound(searchTerm: string, filters: FilterMap,
     factor: number, duration: number, path: string) {
-  filters.set("duration", [1, MAX_DURATION]);
+  //longer original sounds for stretched than non-stretched
+  //const searchMaxDur = factor > 1 ? 4*duration/factor : 2*duration;
+  filters.set("duration", [1, 3*duration]);
   const filename = await getFreeSound(searchTerm, filters, path);
   if (filename) {
     console.log("stretching", filename, factor, duration);
