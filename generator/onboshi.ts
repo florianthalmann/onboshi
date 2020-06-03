@@ -8,14 +8,14 @@ import { GeoTopologyGenerator } from '../src/app/services/topology';
 const URI = "https://freesound.org/apiv2/search/text/?";
 const SOUNDS_URI = "https://freesound.org/apiv2/sounds/";
 const KEY = "DMkQspbGpJ45afW7LgzWan8tcbOzScC262QsYgjG";
-const MATERIAL = 'src/assets/sounds/';
+const MATERIAL = 'material/';
 const TOPOLOGIES = 'src/assets/topologies/';
 
 type FilterMap = Map<string, number[] | string[]>;
 
-createSoundMaterial('even3');
-//updateFilenamesJson('more');
-//createTopology('more2', 'more');
+//createSoundMaterial('even4');
+//updateFilenamesJson('prod');
+createTopology('prod1', 'prod');
 
 async function createTopology(name: string, materialName: string) {
   const material = JSON.parse(

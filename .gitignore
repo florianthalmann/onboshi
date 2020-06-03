@@ -31,6 +31,7 @@ npm-debug.log*
 /www
 
 package-lock.json
-src/assets/sounds
+material/
+src/assets/material
 src/assets/topologies
 resources/

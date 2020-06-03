@@ -18,6 +18,7 @@ export class HomePage {
   protected geolocStatus = "";
   protected playerStatus = "";
   private numGeolocUpdates = 0;
+  private STEP = 6;
   
   constructor(private player: OnboshiPlayer, private geolocation: Geolocation,
       private backgroundGeolocation: BackgroundGeolocation) {
@@ -67,8 +68,8 @@ export class HomePage {
   
   private automove() {
     setTimeout(() => {
-      this.x = this.mod((this.x + _.random(-40, 40)), 1000);
-      this.y = this.mod((this.y + _.random(-40, 40)), 1000);
+      this.x = this.mod((this.x + _.random(-this.STEP, this.STEP)), 1000);
+      this.y = this.mod((this.y + _.random(-this.STEP, this.STEP)), 1000);
       this.updatePosition();
       this.automove();
     }, TRANS_TIME*1000);
