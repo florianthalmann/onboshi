@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { TopologyConfig, Point, Range, State, TopologyOptions } from './types';
+import { TopologyConfig, Point, Range, State, AreaTopologyOptions } from './types';
 import { PARAMS, GEO_OPTIONS } from './consts';
 
 
@@ -44,9 +44,9 @@ export class Topology {
 
 }
 
-export class TopologyGenerator {
+export class AreaTopologyGenerator {
   
-  constructor(private options: TopologyOptions) {}
+  constructor(private options: AreaTopologyOptions) {}
   
   generate(): TopologyConfig {
     const sources = _.range(0, this.options.numSources).map(_i => ({
@@ -64,8 +64,8 @@ export class TopologyGenerator {
     const position = _.random(1, true);
     const baseRadius = 1/Math.sqrt(this.options.numSources)/2;//nonoverlapping
     const refRadius = Math.sqrt(this.options.density)*baseRadius//density == avg num overlapping
-      / ((1+this.options.radiusVariation)/2);
-    const radius = refRadius * _.random(1, this.options.radiusVariation);
+      / ((1+this.options.sizeVariation)/2);
+    const radius = refRadius * _.random(1, this.options.sizeVariation);
     //console.log(position, baseRadius, refRadius, radius);
     return {center: position, radius: radius};
   }
@@ -83,11 +83,11 @@ export class GeoTopologyGenerator {
     const numSources = squareKms * Math.pow(this.options.sourcesPerKm, 2);
     const numPoints = squareKms * Math.pow(this.options.paramPointsPerKm, 2);
     console.log("squareKms", squareKms, "numSources", numSources, "numPoints", numPoints);
-    return new TopologyGenerator({
+    return new AreaTopologyGenerator({
       samples: this.samples,
       numSources: numSources,
       density: this.options.density,
-      radiusVariation: this.options.radiusVariation,
+      sizeVariation: this.options.sizeVariation,
       params: PARAMS,
       numParamPoints: numPoints
     }).generate();

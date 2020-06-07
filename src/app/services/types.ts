@@ -44,11 +44,20 @@ interface Param {
 
 export interface TopologyOptions {
   samples: string[],
-  numSources: number,
   density: number, //avg sources playing simultaneously
-  radiusVariation: number, //variation in area radiuses [r, r*v], v >= 1
-  params: ParamDefs,
-  numParamPoints: number,
+  sizeVariation: number, //variation in area sizes, e.g. radius [r, r*v], v >= 1
+  params: ParamDefs
+}
+
+export interface AreaTopologyOptions extends TopologyOptions {
+  numSources: number,
+  numParamPoints: number
+}
+
+export interface SimplexTopologyOptions extends TopologyOptions {
+  baseFrequency: number,
+  paramFrequency: number,
+  paramCutoff: number
 }
 
 export interface GeoTopologyOptions {
@@ -57,5 +66,5 @@ export interface GeoTopologyOptions {
   sourcesPerKm: number, //~at 23°N/S
   paramPointsPerKm: number, //~at 23°N/S
   density: number,
-  radiusVariation: number
+  sizeVariation: number
 }
