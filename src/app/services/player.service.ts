@@ -30,7 +30,7 @@ export class OnboshiPlayer {
   
   constructor(private httpClient: HttpClient) {
     this.init();
-    context.latencyHint = 'playback';
+    //context.latencyHint = 'playback';
   }
   
   async init() {

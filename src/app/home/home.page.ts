@@ -14,10 +14,10 @@ import { drawCanvas } from '../services/noise';
 })
 export class HomePage {
 
-  protected x = 0;
-  protected y = 0;
-  protected geolocStatus = "";
-  protected playerStatus = "";
+  public x = 0;
+  public y = 0;
+  public geolocStatus = "";
+  public playerStatus = "";
   private numGeolocUpdates = 0;
   private STEP = 0.01;
   
