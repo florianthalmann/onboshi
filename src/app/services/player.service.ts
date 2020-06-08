@@ -4,11 +4,12 @@ import { Player, Gain, PingPongDelay, gainToDb, Destination,
   Chebyshev, AutoWah, context, start } from 'tone';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { TopologyConfig, SourceState } from './types';
+import { SourceState } from './types';
 import { PARAMS } from './consts';
-import { Topology, GeoTopologyGenerator } from './topology';
+//import { Topology, GeoTopologyGenerator } from './topology';
+import { SimplexTopology, GeoTopologyGenerator, SimplexTopologyConfig } from './simplex-topology';
 
-const TOPO = 'prod1';
+const TOPO = 'simplex';
 const PATH = 'assets/material/prod/';
 const TOPOLOGIES = 'assets/topologies/';
 export const TRANS_TIME = 3; //seconds
@@ -16,7 +17,7 @@ export const TRANS_TIME = 3; //seconds
 @Injectable()
 export class OnboshiPlayer {
   
-  private topology: Topology;
+  private topology: SimplexTopology;
   private delay1: FeedbackDelay;
   private delay2: PingPongDelay;
   private chorus: Chorus;
@@ -58,12 +59,13 @@ export class OnboshiPlayer {
   
   private async loadOrGenerateTopology(name: string) {
     const path = TOPOLOGIES+name+'.json';
-    const loaded = <TopologyConfig>await this.loadJson(path);
+    const loaded = <SimplexTopologyConfig>await this.loadJson(path);
+    if (loaded) console.log(loaded.samples.length)
     if (loaded) {
-      this.topology = new Topology(loaded);
+      this.topology = new SimplexTopology(loaded);
     } else {
       const audio = await this.loadAudioList();
-      this.topology = new Topology(new GeoTopologyGenerator(audio).generate());
+      this.topology = new SimplexTopology(new GeoTopologyGenerator(audio).generate());
     }
   }
   

@@ -3,7 +3,7 @@ import * as https from 'https';
 import * as fs from 'fs';
 import * as mm from 'music-metadata';
 import { mapSeries, toMap, fetchJson, execute } from './util';
-import { GeoTopologyGenerator } from '../src/app/services/topology';
+import { GeoTopologyGenerator } from '../src/app/services/simplex-topology';
 
 const URI = "https://freesound.org/apiv2/search/text/?";
 const SOUNDS_URI = "https://freesound.org/apiv2/sounds/";
@@ -15,7 +15,7 @@ type FilterMap = Map<string, number[] | string[]>;
 
 //createSoundMaterial('even4');
 //updateFilenamesJson('prod');
-createTopology('prod1', 'prod');
+createTopology('simplex', 'prod');
 
 async function createTopology(name: string, materialName: string) {
   const material = JSON.parse(

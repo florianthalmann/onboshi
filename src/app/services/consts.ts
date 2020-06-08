@@ -8,10 +8,10 @@ export const GEO_OPTIONS: GeoTopologyOptions = {
   sourcesPerKm: 30,
   paramPointsPerKm: 20,
   density: 8,
-  radiusVariation: 8
+  sizeVariation: 20
 }
 
-const FX_OFF = -0.6;
+const FX_OFF = -0.8;
 
 export const PARAMS: ParamDefs = {
   CHORUS_LEVEL: {name: "chorus level", min: FX_OFF, max: 1},

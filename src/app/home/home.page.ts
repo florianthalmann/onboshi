@@ -5,6 +5,7 @@ import { BackgroundGeolocation, BackgroundGeolocationEvents
   } from '@ionic-native/background-geolocation/ngx';
 import { throttleTime } from "rxjs/operators";
 import { OnboshiPlayer, TRANS_TIME } from '../services/player.service';
+import { drawCanvas } from '../services/noise';
 
 @Component({
   selector: 'app-home',
@@ -18,12 +19,16 @@ export class HomePage {
   protected geolocStatus = "";
   protected playerStatus = "";
   private numGeolocUpdates = 0;
-  private STEP = 6;
+  private STEP = 0.01;
   
   constructor(private player: OnboshiPlayer, private geolocation: Geolocation,
       private backgroundGeolocation: BackgroundGeolocation) {
     //this.automove();
     this.geomove();
+  }
+  
+  ngOnInit() {
+    setTimeout(() => drawCanvas(), 1000);
   }
   
   protected async updatePosition() {
