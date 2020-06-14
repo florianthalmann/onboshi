@@ -5,14 +5,13 @@ import { Player, Gain, PingPongDelay, gainToDb, Destination,
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { SourceState } from './types';
-import { PARAMS } from './consts';
+import { PARAMS, TRANS_TIME } from './consts';
 //import { Topology, GeoTopologyGenerator } from './topology';
 import { SimplexTopology, GeoTopologyGenerator, SimplexTopologyConfig } from './simplex-topology';
 
 const TOPO = 'simplex';
 const PATH = 'assets/material/prod/';
 const TOPOLOGIES = 'assets/topologies/';
-export const TRANS_TIME = 3; //seconds
 
 @Injectable()
 export class OnboshiPlayer {

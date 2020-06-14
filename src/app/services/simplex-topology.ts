@@ -69,9 +69,9 @@ export class GeoTopologyGenerator {
   generate(): SimplexTopologyConfig {
     const width = this.options.long[1]-this.options.long[0];
     const height = this.options.lat[1]-this.options.lat[0];
-    const squareKms = width * height / 0.0001;
-    const baseFrequency = Math.sqrt(squareKms)*100;
-    console.log("squareKms", squareKms, "baseFreq", Math.sqrt(squareKms)*100);
+    const squareKms = width * 100 * height * 100;
+    const baseFrequency = Math.sqrt(squareKms);
+    console.log("squareKms", squareKms, "baseFreq", baseFrequency);
     return new SimplexTopologyGenerator({
       samples: this.samples,
       density: this.options.density,

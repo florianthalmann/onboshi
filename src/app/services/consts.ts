@@ -1,5 +1,7 @@
 import { GeoTopologyOptions, ParamDefs } from './types';
 
+export const TRANS_TIME = 3; //seconds
+
 //35.042 35.052, 135.782 135.792 (一乗寺)
 //34.97 35.13, 135.67 135.83 (京都)
 export const GEO_OPTIONS: GeoTopologyOptions = {
@@ -8,7 +10,7 @@ export const GEO_OPTIONS: GeoTopologyOptions = {
   sourcesPerKm: 30,
   paramPointsPerKm: 20,
   density: 8,
-  sizeVariation: 20
+  sizeVariation: 7
 }
 
 const FX_OFF = -0.8;
