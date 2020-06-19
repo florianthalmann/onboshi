@@ -1,7 +1,5 @@
 import * as _ from 'lodash';
-import { Player, Gain, PingPongDelay, gainToDb, Destination,
-  Signal, Param, Chorus, FeedbackDelay, Vibrato,
-  Chebyshev, AutoWah, context, start } from 'tone';
+import * as Tone from 'tone';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { SourceState } from './types';
@@ -16,38 +14,42 @@ const TOPOLOGIES = 'assets/topologies/';
 @Injectable()
 export class OnboshiPlayer {
   
+  private ready: Promise<void>;
   private topology: SimplexTopology;
-  private delay1: FeedbackDelay;
-  private delay2: PingPongDelay;
-  private chorus: Chorus;
-  private cheby: Chebyshev;
-  private vibrato: Vibrato;
-  private wah: AutoWah;
-  private mainSend: Gain;
-  private players = new Map<string, Player>();
+  private delay1: Tone.FeedbackDelay;
+  private delay2: Tone.PingPongDelay;
+  private chorus: Tone.Chorus;
+  private cheby: Tone.Chebyshev;
+  private vibrato: Tone.Vibrato;
+  private wah: Tone.AutoWah;
+  private mainSend: Tone.Gain;
+  private players = new Map<string, Tone.Player>();
   private fadeoutTimeouts = new Map<string, NodeJS.Timer>();
   
   constructor(private httpClient: HttpClient) {
-    this.init();
-    //context.latencyHint = 'playback';
+    this.ready = this.init();
   }
   
   async init() {
-    this.chorus = new Chorus();
-    this.vibrato = new Vibrato();
-    this.wah = new AutoWah();
-    this.cheby = new Chebyshev(50);
+    Tone.setContext(new Tone.Context({ latencyHint : "playback" }));
+    //console.log("context set", Tone.getContext().latencyHint)
+    console.log(Tone.context.latencyHint)
+    this.chorus = new Tone.Chorus();
+    this.vibrato = new Tone.Vibrato();
+    this.wah = new Tone.AutoWah();
+    this.cheby = new Tone.Chebyshev(50);
     this.cheby.wet.setValueAtTime(0, 0);
-    this.delay1 = new FeedbackDelay();
-    this.delay2 = new PingPongDelay();
+    this.delay1 = new Tone.FeedbackDelay();
+    this.delay2 = new Tone.PingPongDelay();
     //this.reverb = new Reverb(3);
-    this.mainSend = new Gain();
+    this.mainSend = new Tone.Gain();
     this.mainSend.chain(this.chorus, this.vibrato, this.wah, this.cheby,
-      this.delay1, this.delay2, Destination); //this.reverb, Destination);
+      this.delay1, this.delay2, Tone.Master); //this.reverb, Destination);
   }
   
   async setPosition(x: number, y: number) {
-    if (context.state === 'suspended') start();
+    await this.ready;
+    if (Tone.context.state === 'suspended') Tone.start();
     if (!this.topology) await this.loadOrGenerateTopology(TOPO);
     if (!isNaN(x) && !isNaN(y)) {
       const config = this.topology.getState(x, y);
@@ -71,12 +73,12 @@ export class OnboshiPlayer {
   private setParam(name: string, value: number) {
     console.log(name, value);
     const param = this.getParam(name);
-    if (param instanceof Signal) param.linearRampTo(value, TRANS_TIME);
+    if (param instanceof Tone.Signal) param.linearRampTo(value, TRANS_TIME);
     //else this.reverb.decay = value;
   }
   
-  private getParam(name: string): Signal<"time"> | Signal<"normalRange">
-      | Signal<"frequency"> | Param<"time"> | Param<"normalRange"> {
+  private getParam(name: string): Tone.Signal<"time"> | Tone.Signal<"normalRange">
+      | Tone.Signal<"frequency"> | Tone.Param<"time"> | Tone.Param<"normalRange"> {
     if (name === PARAMS.CHORUS_LEVEL.name) return this.chorus.wet;
     if (name === PARAMS.VIBRATO_LEVEL.name) return this.vibrato.wet;
     if (name === PARAMS.VIBRATO_FREQUENCY.name) return this.vibrato.frequency;
@@ -105,9 +107,9 @@ export class OnboshiPlayer {
   
   private async addPlayer(sample: string) {
     return new Promise(resolve => {
-      this.players.set(sample, new Player(PATH+sample, () => {
+      this.players.set(sample, new Tone.Player(PATH+sample, () => {
         const player = this.players.get(sample);
-        player.volume.value = gainToDb(0);
+        player.volume.value = Tone.gainToDb(0);
         player.loop = true;
         player.loopStart = 0.4;
         player.loopEnd = player.buffer.duration-0.4;
@@ -135,7 +137,7 @@ export class OnboshiPlayer {
         clearTimeout(this.fadeoutTimeouts.get(sample));
         this.fadeoutTimeouts.delete(sample);
       }
-      this.players.get(sample).volume.linearRampTo(gainToDb(gain), TRANS_TIME);
+      this.players.get(sample).volume.linearRampTo(Tone.gainToDb(gain), TRANS_TIME);
     }
   }
   

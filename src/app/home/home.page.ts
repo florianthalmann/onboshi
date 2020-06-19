@@ -68,8 +68,8 @@ export class HomePage {
         +"). switching to regular plugin");
       this.geolocation.watchPosition({timeout: 20000, enableHighAccuracy: true})
         .pipe(throttleTime(interval))
-        .subscribe(data =>
-          this.updateLatLong(data.coords.latitude, data.coords.longitude));
+        .subscribe(data =>{console.log(data)
+          this.updateLatLong(data.coords.latitude, data.coords.longitude)});
     }
   }
   
