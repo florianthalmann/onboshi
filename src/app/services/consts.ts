@@ -13,20 +13,19 @@ export const GEO_OPTIONS: GeoTopologyOptions = {
   sizeVariation: 7
 }
 
-const FX_OFF = -0.8;
+const MIN_LEVEL = 0;//-0.8 for old topology model....
+const MAX_LEVEL = 1;
 
 export const PARAMS: ParamDefs = {
-  CHORUS_LEVEL: {name: "chorus level", min: FX_OFF, max: 1},
-  VIBRATO_LEVEL: {name: "vibrato level", min: FX_OFF, max: 1},
+  CHORUS_LEVEL: {name: "chorus level", min: MIN_LEVEL, max: MAX_LEVEL},
+  VIBRATO_LEVEL: {name: "vibrato level", min: MIN_LEVEL, max: MAX_LEVEL},
   VIBRATO_FREQUENCY: {name: "vibrato frequency", min: 0, max: 2},
-  WAH_LEVEL: {name: "wah level", min: FX_OFF, max: 1},
-  CHEBYCHEV_LEVEL: {name: "chebychev level", min: FX_OFF, max: 0},
-  DELAY_TIME: {name: "delay time", min: 0, max: 1},
-  DELAY_FEEDBACK: {name: "delay feedback", min: 0, max: 0.9},
-  DELAY_LEVEL: {name: "delay level", min: FX_OFF, max: 1},
+  WAH_LEVEL: {name: "wah level", min: MIN_LEVEL, max: MAX_LEVEL},
+  CHEBYCHEV_LEVEL: {name: "chebychev level", min: MIN_LEVEL, max: MAX_LEVEL},
+  DELAY_TIME: {name: "delay time", min: 0, max: 2},
+  DELAY_FEEDBACK: {name: "delay feedback", min: 0, max: 1},
+  DELAY_LEVEL: {name: "delay level", min: MIN_LEVEL, max: MAX_LEVEL},
   DELAY2_TIME: {name: "delay2 time", min: 0, max: 2},
-  DELAY2_FEEDBACK: {name: "delay2 feedback", min: 0, max: 0.9},
-  DELAY2_LEVEL: {name: "delay2 level", min: FX_OFF, max: 1},
-  REVERB_ROOM: {name: "reverb room", min: 0, max: 1},
-  REVERB_LEVEL: {name: "reverb level", min: FX_OFF, max: 1}
+  DELAY2_FEEDBACK: {name: "delay2 feedback", min: 0, max: 1},
+  DELAY2_LEVEL: {name: "delay2 level", min: MIN_LEVEL, max: MAX_LEVEL}
 }

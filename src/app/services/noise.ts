@@ -9,9 +9,10 @@ export class Noise {
     this.noise = makeNoise2D(seed);
   }
   
+  /** returns a value in [0,1] */
   getValue(x: number, y: number, frequency: number, cutoff: number) {
     let value = this.noise(x*frequency, y*frequency); 
-    value = (value+1)/2; //normalize
+    value = (value+1)/2; //normalize to [0,1]
     return (Math.max(cutoff, value)-cutoff)*(1/(1-cutoff)); //cut off
   }
   

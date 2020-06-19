@@ -61,7 +61,6 @@ export class OnboshiPlayer {
   private async loadOrGenerateTopology(name: string) {
     const path = TOPOLOGIES+name+'.json';
     const loaded = <SimplexTopologyConfig>await this.loadJson(path);
-    if (loaded) console.log(loaded.samples.length)
     if (loaded) {
       this.topology = new SimplexTopology(loaded);
     } else {

@@ -25,13 +25,21 @@ export class SimplexTopology {
   }
   
   getState(x: number, y: number): State {
-    const params = _.mapValues(this.config.params, (v,k) =>
-      this.paramNoises[k].getValue(x, y, v.frequency, v.cutoff));
+    const params = _.mapValues(this.config.params, (v,k) => {
+      const cutoff = k.indexOf("level") >= 0 ? v.cutoff : 0; //temp hack...
+      const value = this.paramNoises[k].getValue(x, y, v.frequency, cutoff);
+      return this.toParamRange(k, value);
+    });
     const sources = _.values(_.mapValues(this.config.samples, (v,k) => ({
       sample: k,
       gain: this.sampleNoises[k].getValue(x, y, v.frequency, v.cutoff)
     }))).filter(c => c.gain > 0);
     return {sources: sources, params: params};
+  }
+  
+  private toParamRange(paramName: string, noiseValue: number) {
+    const param = _.values(PARAMS).find(p => p.name == paramName);
+    return param ? noiseValue*(param.max-param.min)+param.min : 0;
   }
 
 }
