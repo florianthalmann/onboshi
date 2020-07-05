@@ -10,6 +10,8 @@ import { SimplexTopology, GeoTopologyGenerator, SimplexTopologyConfig } from './
 const TOPO = 'simplex';
 const PATH = 'assets/material/prod/';
 const TOPOLOGIES = 'assets/topologies/';
+const SYNC_PLAYERS = true;
+const LOOP_PADDING = 0.1//0.4;
 
 @Injectable()
 export class OnboshiPlayer {
@@ -70,8 +72,8 @@ export class OnboshiPlayer {
   }
   
   private setParam(name: string, value: number) {
-    console.log(name, value);
     const param = this.getParam(name);
+    value = 0
     if (param instanceof Tone.Signal) param.linearRampTo(value, TRANS_TIME);
     //else this.reverb.decay = value;
   }
@@ -100,7 +102,8 @@ export class OnboshiPlayer {
     //add and adjust future
     const toAdd = _.uniq(_.difference(future, current));
     await Promise.all(toAdd.map(s => this.addPlayer(s)));
-    configs.forEach(c => this.adjustGain(c.sample, c.gain));
+    const longestBuffer = _.max(future.map(p => this.players.get(p).buffer.duration));
+    configs.forEach(c => this.adjustPlayer(c, longestBuffer));
     return future.length; //current num sources
   }
   
@@ -110,8 +113,8 @@ export class OnboshiPlayer {
         const player = this.players.get(sample);
         player.volume.value = Tone.gainToDb(0);
         player.loop = true;
-        player.loopStart = 0.4;
-        player.loopEnd = player.buffer.duration-0.4;
+        player.loopStart = LOOP_PADDING;
+        player.loopEnd = player.buffer.duration-LOOP_PADDING;
         player.start();
         resolve();
       }).connect(this.mainSend));
@@ -130,13 +133,29 @@ export class OnboshiPlayer {
     }
   }
   
-  private adjustGain(sample: string, gain: number) {
+  private adjustPlayer(state: SourceState, longestBuffer: number) {
+    if (this.players.has(state.sample)) {
+      const player = this.players.get(state.sample);
+      //adjust period
+      if (SYNC_PLAYERS) {
+        const DUR = longestBuffer-(2*LOOP_PADDING);
+        const dur = player.buffer.duration-(2*LOOP_PADDING);
+        const times = Math.ceil(DUR/dur);
+        player.loopEnd = LOOP_PADDING+(DUR/times);
+      }
+      //adjust gain
+      this.adjustGain(state.sample, state.gain);
+    }
+  }
+  
+  private adjustGain(sample: string, value: number) {
     if (this.players.has(sample)) {
       if (this.fadeoutTimeouts.has(sample)) {
         clearTimeout(this.fadeoutTimeouts.get(sample));
         this.fadeoutTimeouts.delete(sample);
       }
-      this.players.get(sample).volume.linearRampTo(Tone.gainToDb(gain), TRANS_TIME);
+      this.players.get(sample)
+        .volume.exponentialRampTo(Tone.gainToDb(value), TRANS_TIME);
     }
   }
   
