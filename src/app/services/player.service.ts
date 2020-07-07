@@ -20,6 +20,7 @@ export class OnboshiPlayer {
   private topology: SimplexTopology;
   private delay1: Tone.FeedbackDelay;
   private delay2: Tone.PingPongDelay;
+  private reverb: Tone.Reverb;
   private chorus: Tone.Chorus;
   private cheby: Tone.Chebyshev;
   private vibrato: Tone.Vibrato;
@@ -43,9 +44,10 @@ export class OnboshiPlayer {
     this.cheby.wet.setValueAtTime(0, 0);
     this.delay1 = new Tone.FeedbackDelay();
     this.delay2 = new Tone.PingPongDelay();
-    //this.reverb = new Reverb(3);
+    this.reverb = new Tone.Reverb(10);
+    await this.reverb.generate();
     this.mainSend = new Tone.Gain();
-    this.mainSend.chain(this.chorus, this.vibrato, this.wah, this.cheby,
+    this.mainSend.chain(this.chorus, this.vibrato, this.wah, this.cheby, this.reverb,
       this.delay1, this.delay2, Tone.Master); //this.reverb, Destination);
   }
   
@@ -73,9 +75,8 @@ export class OnboshiPlayer {
   
   private setParam(name: string, value: number) {
     const param = this.getParam(name);
-    value = 0
+    //console.log(name, value)
     if (param instanceof Tone.Signal) param.linearRampTo(value, TRANS_TIME);
-    //else this.reverb.decay = value;
   }
   
   private getParam(name: string): Tone.Signal<"time"> | Tone.Signal<"normalRange">
@@ -91,6 +92,7 @@ export class OnboshiPlayer {
     if (name === PARAMS.DELAY2_TIME.name) return this.delay2.delayTime;
     if (name === PARAMS.DELAY2_FEEDBACK.name) return this.delay2.feedback;
     if (name === PARAMS.DELAY2_LEVEL.name) return this.delay2.wet;
+    if (name === PARAMS.REVERB_LEVEL.name) return this.reverb.wet;
   }
   
   private async updatePlayers(configs: SourceState[]) {

@@ -23,8 +23,8 @@ export class HomePage {
   
   constructor(private player: OnboshiPlayer, private geolocation: Geolocation,
       private backgroundGeolocation: BackgroundGeolocation) {
-    //this.automove();
-    this.geomove();
+    this.automove();
+    //this.geomove();
   }
   
   ngOnInit() {
@@ -75,7 +75,7 @@ export class HomePage {
   
   private automove() {
     const size = (GEO_OPTIONS.lat[1]-GEO_OPTIONS.lat[0]) * 100 * 1000;//width in meters
-    const step = 10 / size * 1000;//+-10 meters
+    const step = 20 / size * 1000;//+-10 meters
     setTimeout(() => {
       this.x = this.mod((this.x + _.random(-step, step)), 1000);
       this.y = this.mod((this.y + _.random(-step, step)), 1000);
@@ -84,7 +84,7 @@ export class HomePage {
       console.log(GEO_OPTIONS.lat[0]+(s*(this.x/1000)), GEO_OPTIONS.long[0]+(s*(this.y/1000)))
       this.updatePosition();
       this.automove();
-    }, TRANS_TIME*1000);
+    }, (TRANS_TIME+0.5)*1000);
   }
   
   private mod(x: number, m: number) {
