@@ -28,5 +28,5 @@ export const PARAMS: ParamDefs = {
   DELAY2_TIME: {name: "delay2 time", min: 0, max: 2},
   DELAY2_FEEDBACK: {name: "delay2 feedback", min: 0.3, max: 1},
   DELAY2_LEVEL: {name: "delay2 level", min: MIN_LEVEL, max: MAX_LEVEL},
-  REVERB_LEVEL: {name: "reverb level", min: MIN_LEVEL, max: MAX_LEVEL}
+  REVERB_LEVEL: {name: "reverb level", min: MIN_LEVEL, max: 5}
 }

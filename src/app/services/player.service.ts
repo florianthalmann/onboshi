@@ -44,7 +44,7 @@ export class OnboshiPlayer {
     this.cheby.wet.setValueAtTime(0, 0);
     this.delay1 = new Tone.FeedbackDelay();
     this.delay2 = new Tone.PingPongDelay();
-    this.reverb = new Tone.Reverb(10);
+    this.reverb = new Tone.Reverb(20);
     await this.reverb.generate();
     this.mainSend = new Tone.Gain();
     this.mainSend.chain(this.chorus, this.vibrato, this.wah, this.cheby, this.reverb,
@@ -75,7 +75,7 @@ export class OnboshiPlayer {
   
   private setParam(name: string, value: number) {
     const param = this.getParam(name);
-    //console.log(name, value)
+    console.log(name, value)
     if (param instanceof Tone.Signal) param.linearRampTo(value, TRANS_TIME);
   }
   
@@ -157,7 +157,7 @@ export class OnboshiPlayer {
         this.fadeoutTimeouts.delete(sample);
       }
       this.players.get(sample)
-        .volume.exponentialRampTo(Tone.gainToDb(value), TRANS_TIME);
+        .volume.linearRampTo(Tone.gainToDb(value), TRANS_TIME);
     }
   }
   
