@@ -15,11 +15,12 @@ import { GEO_OPTIONS, TRANS_TIME } from '../services/consts';
 })
 export class HomePage {
 
-  public x = 500; //start in middle
-  public y = 500;
+  public x = _.random(1000); //start at random spot for automove...
+  public y = _.random(1000);
   public geolocStatus = "";
   public playerStatus = "";
   private numGeolocUpdates = 0;
+  private STEP_SIZE = 20;
   
   constructor(private player: OnboshiPlayer, private geolocation: Geolocation,
       private backgroundGeolocation: BackgroundGeolocation) {
@@ -31,7 +32,7 @@ export class HomePage {
     setTimeout(() => drawCanvas(), 1000);
   }
   
-  protected async updatePosition() {
+  private async updatePosition() {
     const numSources = await this.player.setPosition(this.x/1000, this.y/1000);
     this.playerStatus = "sources: "+numSources;
   }
@@ -75,7 +76,7 @@ export class HomePage {
   
   private automove() {
     const size = (GEO_OPTIONS.lat[1]-GEO_OPTIONS.lat[0]) * 100 * 1000;//width in meters
-    const step = 20 / size * 1000;//+-10 meters
+    const step = this.STEP_SIZE / size * 1000;//+-10 meters
     setTimeout(() => {
       this.x = this.mod((this.x + _.random(-step, step)), 1000);
       this.y = this.mod((this.y + _.random(-step, step)), 1000);

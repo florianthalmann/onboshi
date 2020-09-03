@@ -7,7 +7,7 @@ import { PARAMS, TRANS_TIME } from './consts';
 //import { Topology, GeoTopologyGenerator } from './topology';
 import { SimplexTopology, GeoTopologyGenerator, SimplexTopologyConfig } from './simplex-topology';
 
-const TOPO = 'simplex';
+const TOPO = 'simplex2';
 const PATH = 'assets/material/prod/';
 const TOPOLOGIES = 'assets/topologies/';
 const SYNC_PLAYERS = true;
@@ -44,11 +44,17 @@ export class OnboshiPlayer {
     this.cheby.wet.setValueAtTime(0, 0);
     this.delay1 = new Tone.FeedbackDelay();
     this.delay2 = new Tone.PingPongDelay();
-    this.reverb = new Tone.Reverb(20);
-    await this.reverb.generate();
+    this.reverb = new Tone.PingPongDelay(0.001, 0.8);
+    //this.reverb = new Tone.Gain();//Tone.context.createConvolver();//new Tone.Reverb(10);//new Tone.Convolver('assets/impulse_rev.wav');//new Tone.Reverb(20);
+    /*this.reverb.buffer = await new Promise(resolve => {
+      const buffer = new Tone.Buffer('assets/impulse_rev-1.wav', () => resolve(buffer.get()))
+    });*/
+    //await this.reverb.generate();
+    //const mono = new Tone.Mono();
     this.mainSend = new Tone.Gain();
-    this.mainSend.chain(this.chorus, this.vibrato, this.wah, this.cheby, this.reverb,
-      this.delay1, this.delay2, Tone.Master); //this.reverb, Destination);
+    this.mainSend.chain(this.chorus, this.vibrato, this.wah, this.cheby,
+      this.delay1, this.delay2, this.reverb, Tone.Master); //this.reverb, Destination);
+    //this.mainSend.chain(mono, this.reverb, Tone.Master);
   }
   
   async setPosition(x: number, y: number) {
@@ -76,6 +82,7 @@ export class OnboshiPlayer {
   private setParam(name: string, value: number) {
     const param = this.getParam(name);
     console.log(name, value)
+    if (name === PARAMS.REVERB_LEVEL.name) value = 0;
     if (param instanceof Tone.Signal) param.linearRampTo(value, TRANS_TIME);
   }
   
