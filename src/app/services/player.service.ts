@@ -7,7 +7,7 @@ import { PARAMS, TRANS_TIME } from './consts';
 //import { Topology, GeoTopologyGenerator } from './topology';
 import { SimplexTopology, GeoTopologyGenerator, SimplexTopologyConfig } from './simplex-topology';
 
-const TOPO = 'simplex2';
+const TOPO = 'simplexJP';
 const PATH = 'assets/material/prod/';
 const TOPOLOGIES = 'assets/topologies/';
 const SYNC_PLAYERS = true;

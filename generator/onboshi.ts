@@ -12,14 +12,15 @@ const TOPOLOGIES = 'src/assets/topologies/';
 
 type FilterMap = Map<string, number[] | string[]>;
 
-const MATERIAL_PATH = 'material/dub1/';
+const MATERIAL_PATH = 'material/prod/';
 fs.existsSync(MATERIAL_PATH) || fs.mkdirSync(MATERIAL_PATH);
 
-createBpmMaterial(100, 100);
-//updateFilenamesJson(NAME);
-//createTopology('simplex', NAME);
+//createSoundMaterial()
+//createBpmMaterial(100, 100);
+updateFilenamesJson();
+createTopology('simplexJP');
 
-async function createTopology(name: string, materialName: string) {
+async function createTopology(name: string) {
   const material = JSON.parse(
     fs.readFileSync(MATERIAL_PATH+'_content.json', 'utf8'));
   const topology = new GeoTopologyGenerator(material).generate();
@@ -39,18 +40,20 @@ async function createBpmMaterial(bpm: number, size = 100) {
 }
 
 async function createSoundMaterial(size = 100) {
-  //textures
-  const textures = ['atmosphere', 'ambient', 'soundscape', 'abstract',
+  //textures (stretched)
+  const textures = ['shakuhachi','koto','japanese music','japan music','sho','shinto',
+      'taiko','sanshin','shamisen','biwa','taisho-goto','kotsuzumi','wadaiko',
+      'nohkan','mukkuri','kagura suzu','japanese temple','japanese shrine'] /*['atmosphere', 'ambient', 'soundscape', 'abstract',
     'harmonic', 'smooth', 'pitch', 'chord', 'vibe', 'texture',
     'harmony', 'warm', 'instrument', 'acoustic', 'synth', 'deep', 'pleasant',
-    'cool', 'hot']
+    'cool', 'hot']*/
   await createMaterial(Math.round(size/2), textures, getKeyAndPitchFilters(),
     [1,10], [2,10]);
   //rhythmic elements
-  const rhythm = ['percussion', 'drums', 'rhythm', 'ethnic', 'beat', 'gong',
+  const rhythm = textures/*['percussion', 'drums', 'rhythm', 'ethnic', 'beat', 'gong',
     'bell', 'chime', 'drum', 'perc', 'shake', 'shaker', 'cymbal', 'roll',
     'bottle', 'cup', 'africa', 'indonesia', 'sound', 'tribal', 'china',
-    'japan', 'crackle'];
+    'japan', 'crackle'];*/
   const single = toMap(['ac_single_event', ['true']]);
   const multi = toMap(['ac_single_event', ['false']]);
   await createMaterial(Math.round(size/4), rhythm, [single], [1,10]);
@@ -98,6 +101,7 @@ async function saveStretchedFreeSound(searchTerm: string, filters: FilterMap,
   //longer original sounds for stretched than non-stretched
   //const searchMaxDur = factor > 1 ? 4*duration/factor : 2*duration;
   if (durationFactor) duration = duration - modForReal(duration, durationFactor);
+  console.log("duration", duration)
   filters.set("duration", [1, 3*duration]);
   const filename = await getFreeSound(searchTerm, filters);
   if (filename) {
