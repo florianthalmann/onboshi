@@ -1,3 +1,7 @@
+ion-toolbar, ion-content {
+  --background: none;
+}
+
 #container {
   text-align: center;
 
@@ -24,8 +28,4 @@
 
 #container a {
   text-decoration: none;
-}
-
-ion-content ion-toolbar {
-  --background: translucent;
 }

@@ -1,20 +1,14 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>
-      Onboshi
-    </ion-title>
+    <ion-title>Onboshi</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Onboshi</ion-title>
-    </ion-toolbar>
-  </ion-header>
   <ion-range min="0" max="1000" step="1" [(ngModel)]="x" (ngModelChange)="updatePosition()"></ion-range>
   <ion-range min="0" max="1000" step="1" [(ngModel)]="y" (ngModelChange)="updatePosition()"></ion-range>
-  {{geolocStatus}}, {{playerStatus}}
+  {{geolocStatus}}, {{playerStatus}}>
+  <!--ion-img [src]="'assets/img/live-bg.gif'"></ion-img-->
 </ion-content>
 
-<div id="container" [ngStyle]="{'height': '150px', 'width': '150px'}"></div>
+<!--div id="container" [ngStyle]="{'height': '150px', 'width': '150px'}"></div-->

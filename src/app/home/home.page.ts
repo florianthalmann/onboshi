@@ -24,15 +24,15 @@ export class HomePage {
   
   constructor(private player: OnboshiPlayer, private geolocation: Geolocation,
       private backgroundGeolocation: BackgroundGeolocation) {
-    this.automove();
-    //this.geomove();
+    //this.automove();
+    this.geomove();
   }
   
   ngOnInit() {
-    setTimeout(() => drawCanvas(), 1000);
+    //setTimeout(() => drawCanvas(), 1000);
   }
   
-  private async updatePosition() {
+  public async updatePosition() {
     const numSources = await this.player.setPosition(this.x/1000, this.y/1000);
     this.playerStatus = "sources: "+numSources;
   }
