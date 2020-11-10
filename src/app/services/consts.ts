@@ -18,11 +18,11 @@ const MIN_LEVEL = 0;//-0.8 for old topology model....
 const MAX_LEVEL = 1;
 
 export const PARAMS: ParamDefs = {
-  CHORUS_LEVEL: {name: "chorus level", min: MIN_LEVEL, max: 0.5},
+  CHORUS_LEVEL: {name: "chorus level", min: MIN_LEVEL, max: 0.8},
   VIBRATO_LEVEL: {name: "vibrato level", min: MIN_LEVEL, max: MAX_LEVEL},
   VIBRATO_FREQUENCY: {name: "vibrato frequency", min: 0, max: 2},
-  WAH_LEVEL: {name: "wah level", min: MIN_LEVEL, max: MAX_LEVEL},
-  CHEBYCHEV_LEVEL: {name: "chebychev level", min: MIN_LEVEL, max: 0.05},
+  WAH_LEVEL: {name: "wah level", min: MIN_LEVEL, max: 0.8},
+  CHEBYCHEV_LEVEL: {name: "chebychev level", min: MIN_LEVEL, max: 0.25},
   DELAY_TIME: {name: "delay time", min: 0, max: 2},
   DELAY_FEEDBACK: {name: "delay feedback", min: 0.3, max: 1},
   DELAY_LEVEL: {name: "delay level", min: MIN_LEVEL, max: MAX_LEVEL},

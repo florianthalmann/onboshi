@@ -38,13 +38,15 @@ export class OnboshiPlayer {
     //console.log("context set", Tone.getContext().latencyHint)
     console.log(Tone.context.latencyHint)
     this.chorus = new Tone.Chorus();
-    this.vibrato = new Tone.Vibrato();
-    this.wah = new Tone.AutoWah();
+    //this.vibrato = new Tone.Vibrato();
+    //this.wah = new Tone.AutoWah();
+    this.wah = new Tone.Gain();
     this.cheby = new Tone.Chebyshev(50);
     this.cheby.wet.setValueAtTime(0, 0);
     this.delay1 = new Tone.FeedbackDelay();
     this.delay2 = new Tone.PingPongDelay();
-    this.reverb = new Tone.PingPongDelay(0.001, 0.8);
+    this.reverb = new Tone.FeedbackDelay(0.006, 0.8);
+    this.reverb.wet.setValueAtTime(0, 0);
     //this.reverb = new Tone.Gain();//Tone.context.createConvolver();//new Tone.Reverb(10);//new Tone.Convolver('assets/impulse_rev.wav');//new Tone.Reverb(20);
     /*this.reverb.buffer = await new Promise(resolve => {
       const buffer = new Tone.Buffer('assets/impulse_rev-1.wav', () => resolve(buffer.get()))
@@ -52,7 +54,7 @@ export class OnboshiPlayer {
     //await this.reverb.generate();
     //const mono = new Tone.Mono();
     this.mainSend = new Tone.Gain();
-    this.mainSend.chain(this.chorus, this.vibrato, this.wah, this.cheby,
+    this.mainSend.chain(this.chorus, this.wah, this.cheby, //this.vibrato, this.wah, this.cheby,
       this.delay1, this.delay2, this.reverb, Tone.Master); //this.reverb, Destination);
     //this.mainSend.chain(mono, this.reverb, Tone.Master);
   }
@@ -89,8 +91,8 @@ export class OnboshiPlayer {
   private getParam(name: string): Tone.Signal<"time"> | Tone.Signal<"normalRange">
       | Tone.Signal<"frequency"> | Tone.Param<"time"> | Tone.Param<"normalRange"> {
     if (name === PARAMS.CHORUS_LEVEL.name) return this.chorus.wet;
-    if (name === PARAMS.VIBRATO_LEVEL.name) return this.vibrato.wet;
-    if (name === PARAMS.VIBRATO_FREQUENCY.name) return this.vibrato.frequency;
+    //if (name === PARAMS.VIBRATO_LEVEL.name) return this.vibrato.wet;
+    //if (name === PARAMS.VIBRATO_FREQUENCY.name) return this.vibrato.frequency;
     if (name === PARAMS.WAH_LEVEL.name) return this.wah.wet;
     if (name === PARAMS.CHEBYCHEV_LEVEL.name) return this.cheby.wet;
     if (name === PARAMS.DELAY_TIME.name) return this.delay1.delayTime;
