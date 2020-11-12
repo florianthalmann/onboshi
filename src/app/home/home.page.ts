@@ -44,8 +44,8 @@ export class HomePage {
     const minLong = GEO_OPTIONS.long[0], maxLong = GEO_OPTIONS.long[1];
     this.geolocStatus = ++this.numGeolocUpdates
      + ': lat: ' + _.round(lat, 5) + ', long: ' + _.round(long, 5);
-    this.x = (long-minLong)/(maxLong-minLong)*1000;
-    this.y = (lat-minLat)/(maxLat-minLat)*1000;
+    this.x = (long-minLong)/(maxLong-minLong)*1000*0.75;
+    this.y = (lat-minLat)/(maxLat-minLat)*1000*0.75;
     this.updatePosition();
   }
   

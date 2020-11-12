@@ -8,8 +8,8 @@ export const TRANS_TIME = 3; //seconds
 export const GEO_OPTIONS: GeoTopologyOptions = {
   lat: [25, 46],//[34.97, 35.13],//[35.042, 35.052],
   long: [128, 147],//[135.67, 135.83],//[135.782, 135.792],
-  sourcesPerKm: 30,
-  paramPointsPerKm: 20,
+  sourcesPerKm: 30,//not for simplex
+  paramPointsPerKm: 20,//not for simplex
   density: 10,
   sizeVariation: 7
 }
